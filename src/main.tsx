@@ -1,12 +1,12 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import './index.css'
 import App from './App.tsx'
-
-console.info(document.getElementById('human-automator-modal'));
+import { Theme } from "@radix-ui/themes";
 
 createRoot(document.getElementById('human-automator-modal')!).render(
   <StrictMode>
-    <App />
+    <Theme>
+      <App />
+    </Theme>
   </StrictMode>,
 )
