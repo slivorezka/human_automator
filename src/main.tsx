@@ -3,7 +3,9 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 
-createRoot(document.getElementById('root')!).render(
+console.info(document.getElementById('human-automator-modal'));
+
+createRoot(document.getElementById('human-automator-modal')!).render(
   <StrictMode>
     <App />
   </StrictMode>,

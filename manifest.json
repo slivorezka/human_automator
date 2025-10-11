@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Human Automator",
+  "version": "2.2.0",
+  "description": "An unofficial app for automatization human.ua service",
+  "action": {
+    "default_icon": {
+      "128": "dist/assets/icons/128.png"
+    }
+  },
+  "icons": {
+    "16": "dist/assets/icons/16.png",
+    "48": "dist/assets/icons/16.png",
+    "128": "dist/assets/icons/16.png"
+  },
+  "background": {
+    "service_worker": "dist/background.js",
+    "type": "module"
+  },
+  "permissions": [
+    "storage",
+    "scripting",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ]
+}
