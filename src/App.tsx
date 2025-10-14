@@ -156,6 +156,33 @@ function App() {
   const [isToast, setToast] = useState<'' | 'stop' | 'done'>('')
 
   useEffect(() => {
+    setCurrentPercent(getFillInPercent())
+  }, [])
+
+  useEffect(() => {
+    switch (action) {
+      case 'set_rating':
+        setRating(true)
+        setDeleteRating(false)
+        setShowRatingCount(false)
+
+        break
+
+      case 'delete_rating':
+        setRating(false)
+        setDeleteRating(true)
+        setShowRatingCount(false)
+        break
+
+      case 'show_rating_count':
+        setRating(false)
+        setDeleteRating(false)
+        setShowRatingCount(true)
+        break
+    }
+  }, [action])
+
+  useEffect(() => {
     isProcessingHasStopped.current = isProcessing
   }, [isProcessing])
 
@@ -214,6 +241,7 @@ function App() {
   }
 
   const handleClose = () => window.location.reload()
+
   const handleStopProcessing = () => {
     setIsSubmitting(false)
     setIsProcessing(false)
@@ -319,33 +347,6 @@ function App() {
       setPercentError('')
     }
   }
-
-  useEffect(() => {
-    setCurrentPercent(getFillInPercent())
-  }, [])
-
-  useEffect(() => {
-    switch (action) {
-      case 'set_rating':
-        setRating(true)
-        setDeleteRating(false)
-        setShowRatingCount(false)
-
-        break
-
-      case 'delete_rating':
-        setRating(false)
-        setDeleteRating(true)
-        setShowRatingCount(false)
-        break
-
-      case 'show_rating_count':
-        setRating(false)
-        setDeleteRating(false)
-        setShowRatingCount(true)
-        break
-    }
-  }, [action])
 
   return isProcessing ? (
     <>
