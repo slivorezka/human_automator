@@ -1,6 +1,40 @@
 @use 'bootstrap/dist/css/bootstrap.min.css';
 @use 'fonts.scss';
 
+.progress{
+  height: 1.5rem;
+}
+
+.toast {
+  .btn-close {
+    position: absolute;
+    right: 0;
+    margin: 10px;
+  }
+
+  &.bg-danger {
+    .toast-header {
+      position: relative;
+      background-color: rgba(var(--bs-danger-rgb), var(--bs-bg-opacity));
+    }
+  }
+
+  &.bg-success {
+    .toast-header {
+      position: relative;
+      background-color: rgba(var(--bs-success-rgb), var(--bs-bg-opacity));
+    }
+  }
+}
+
 .modal-dialog {
   font-family: 'Poppins', sans-serif;
+}
+
+.input-group:not(.has-validation) > .dropdown-toggle:nth-last-child(n+3),
+.input-group:not(.has-validation) > .form-floating:not(:last-child) > .form-control,
+.input-group:not(.has-validation) > .form-floating:not(:last-child) > .form-select,
+.input-group:not(.has-validation) > :not(:last-child):not(.dropdown-toggle):not(.dropdown-menu):not(.form-floating) {
+  border-top-right-radius: var(--bs-border-radius);
+  border-bottom-right-radius: var(--bs-border-radius);
 }
