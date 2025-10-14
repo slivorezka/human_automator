@@ -360,8 +360,8 @@ function App() {
         setCurrentPercent(percent)
 
         if (!isProcessingHasStopped.current) {
-          handleReset()
           setToast('stop')
+          handleReset()
           return
         }
 
@@ -370,9 +370,8 @@ function App() {
         }
       }
 
-      handleReset()
-      beep()
       setToast('done')
+      beep()
     }
 
     if (isDeleteRating) {
@@ -472,9 +471,8 @@ function App() {
         }
       }
 
-      handleReset()
-      beep()
       setToast('done')
+      beep()
     }
 
     handleReset()
@@ -516,8 +514,9 @@ function App() {
             />
             <div>
               Обробка ... <span className="fw-bold">{currentPercent}%</span>
-              {maxPercent < 100 && (
+              {maxPercent < 100 && maxPercent > 0 && (
                 <>
+                  {' '}
                   із <span className="fw-bold">{maxPercent}%</span>
                 </>
               )}
@@ -541,8 +540,8 @@ function App() {
                 <Bot /> Human Automator
               </strong>
             </Toast.Header>
-            <Toast.Body className="text-white">
-              Проставляння учням оцінки було скасовано!
+            <Toast.Body className="text-white fw-bold text-center">
+              Операцію було скасовано!
             </Toast.Body>
           </Toast>
         </ToastContainer>
@@ -556,8 +555,8 @@ function App() {
                 <Bot /> Human Automator
               </strong>
             </Toast.Header>
-            <Toast.Body className="text-white">
-              Проставляння учням оцінки було успішно завершено!
+            <Toast.Body className="text-white fw-bold text-center">
+              Операцію було успішно завершено!
             </Toast.Body>
           </Toast>
         </ToastContainer>
