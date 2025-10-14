@@ -10,7 +10,7 @@ import {
   ProgressBar,
   Form,
 } from 'react-bootstrap'
-import { Atom } from 'lucide-react'
+import { Bot } from 'lucide-react'
 import Select from 'react-select'
 import type { MultiValue } from 'react-select'
 import makeAnimated from 'react-select/animated'
@@ -141,13 +141,15 @@ const getFillInPercent = (students?: Student[]): number => {
 function App() {
   const [action, setAction] = useState<string>('')
   const [isSetRating, setRating] = useState<boolean>(false)
-  const [showDeleteRating, setDeleteRating] = useState<boolean>(false)
+  const [isDeleteRating, deleteRating] = useState<boolean>(false)
   const [showShowRatingCount, setShowRatingCount] = useState<boolean>(false)
   const [selectedStudents, setSelectedStudents] = useState<Student[] | undefined>(undefined)
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
   const [isProcessing, setIsProcessing] = useState<boolean>(false)
   const [minRating, setMinRating] = useState<number>(0)
   const [maxRating, setMaxRating] = useState<number>(0)
+  const [removeRating, setRemoveRating] = useState<number>(0)
+  const [removeAllRating, setRemoveAllRating] = useState<boolean>(false)
   const [error, setError] = useState<string>('')
   const [percentError, setPercentError] = useState<string>('')
   const [maxPercent, setMaxPercent] = useState<number>(0)
@@ -163,22 +165,27 @@ function App() {
     switch (action) {
       case 'set_rating':
         setRating(true)
-        setDeleteRating(false)
+        deleteRating(false)
         setShowRatingCount(false)
 
         break
 
       case 'delete_rating':
         setRating(false)
-        setDeleteRating(true)
+        deleteRating(true)
         setShowRatingCount(false)
         break
 
       case 'show_rating_count':
         setRating(false)
-        setDeleteRating(false)
+        deleteRating(false)
         setShowRatingCount(true)
         break
+
+      default:
+        setRating(false)
+        deleteRating(false)
+        setShowRatingCount(false)
     }
   }, [action])
 
@@ -186,12 +193,33 @@ function App() {
     isProcessingHasStopped.current = isProcessing
   }, [isProcessing])
 
-  const processItem = (
-    item: HTMLElement,
-    ratingMin: number,
-    ratingMax: number,
+  const handleReset = () => {
+    setAction('')
+    setRating(false)
+    deleteRating(false)
+    setShowRatingCount(false)
+    setSelectedStudents(undefined)
+    setIsSubmitting(false)
+    setIsProcessing(false)
+    setMinRating(0)
+    setMaxRating(0)
+    setError('')
+    setPercentError('')
+    setMaxPercent(0)
+    setCurrentPercent(getFillInPercent())
+  }
+
+  const processItem = ({
+    item,
+    minRating,
+    maxRating,
+    remove,
+  }: {
+    item: HTMLElement
+    minRating?: number
+    maxRating?: number
     remove?: boolean
-  ): Promise<void> => {
+  }): Promise<void> => {
     return new Promise<void>((resolve) => {
       setTimeout(() => {
         if (!isProcessingHasStopped.current) {
@@ -216,7 +244,14 @@ function App() {
             '.mark-group__input-container input.mark-group__input'
           ) as HTMLInputElement
 
-          inputMarkGroup.value = remove ? '' : String(getRandomInt(ratingMin, ratingMax))
+          if (minRating && maxRating) {
+            inputMarkGroup.value = String(getRandomInt(minRating, maxRating))
+          }
+
+          if (remove) {
+            inputMarkGroup.value = ''
+          }
+
           inputMarkGroup.dispatchEvent(new Event('input', { bubbles: true }))
 
           setTimeout(() => {
@@ -232,11 +267,11 @@ function App() {
             if (approve) {
               approve.click()
             }
+
+            resolve()
           }, 300)
         }, 300)
-
-        resolve()
-      }, 1500)
+      }, 1000)
     })
   }
 
@@ -248,24 +283,24 @@ function App() {
     setToast('stop')
   }
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    if (minRating > maxRating) {
-      setError('Мінімальна оцінка не може бути більшою за максимальну')
-      return
-    }
-
-    if (maxPercent <= currentPercent) {
-      setPercentError('Максимальний відсоток заповнення не може бути меншим або рівним поточному')
-      return
-    }
-
-    setIsSubmitting(true)
-    setIsProcessing(true)
-
     if (isSetRating) {
-      const emptyCells: Element[] = []
+      if (minRating > maxRating) {
+        setError('Мінімальна оцінка не може бути більшою за максимальну')
+        return
+      }
+
+      if (maxPercent <= currentPercent) {
+        setPercentError('Максимальний відсоток заповнення не може бути меншим або рівним поточному')
+        return
+      }
+
+      setIsSubmitting(true)
+      setIsProcessing(true)
+
+      const emptyCells: HTMLElement[] = []
 
       if (selectedStudents) {
         const items = [
@@ -288,7 +323,7 @@ function App() {
                 !cell.querySelector('.pseudo-button--color-red') &&
                 !(cell.querySelector('.badge__item--no-border') as HTMLElement)?.innerText.trim()
               ) {
-                emptyCells.push(cell)
+                emptyCells.push(cell as HTMLElement)
               }
             }
           }
@@ -306,41 +341,152 @@ function App() {
             !cell.querySelector('.pseudo-button--color-red') &&
             !(cell.querySelector('.badge__item--no-border') as HTMLElement)?.innerText.trim()
           ) {
-            emptyCells.push(cell)
+            emptyCells.push(cell as HTMLElement)
           }
         }
       }
 
-      const shuffleCells = shuffleArray(emptyCells)
+      setCurrentPercent(getFillInPercent(selectedStudents))
 
-      ;(async () => {
-        for (let i = 0; i < shuffleCells.length; i++) {
-          await processItem(shuffleCells[i], minRating, maxRating)
+      for (const cell of shuffleArray(emptyCells)) {
+        await processItem({
+          item: cell,
+          minRating,
+          maxRating,
+        })
 
-          if (!isProcessingHasStopped.current) {
-            setIsProcessing(false)
-            setIsSubmitting(false)
-            setToast('stop')
-            return
-          }
+        const percent = getFillInPercent(selectedStudents)
 
-          if (maxPercent === getFillInPercent(selectedStudents)) {
-            setIsProcessing(false)
-            setIsSubmitting(false)
-            beep()
-            setToast('done')
-            return
+        setCurrentPercent(percent)
+
+        if (!isProcessingHasStopped.current) {
+          handleReset()
+          setToast('stop')
+          return
+        }
+
+        if (percent >= maxPercent) {
+          break
+        }
+      }
+
+      handleReset()
+      beep()
+      setToast('done')
+    }
+
+    if (isDeleteRating) {
+      setIsSubmitting(true)
+      setIsProcessing(true)
+
+      const cells: HTMLElement[] = []
+
+      if (selectedStudents) {
+        const items = [
+          ...document.querySelectorAll(
+            '.gradebook-container__table2-outlet .gradebook-container__table2-row'
+          ),
+        ]
+
+        for (const item of items) {
+          if (
+            selectedStudents.find(
+              (student) =>
+                student.value ===
+                (item.querySelector('.bem-user__name') as HTMLElement).innerText.trim()
+            )
+          ) {
+            for (const cell of [...item.querySelectorAll('.gradebook-narrow__cell.smart-cell')]) {
+              if (removeAllRating) {
+                if (
+                  cell.querySelector('.gradebook__ng-universal-rating-comments') &&
+                  !cell.querySelector('.pseudo-button--color-red') &&
+                  (cell.querySelector('.badge__item--no-border') as HTMLElement)?.innerText.trim()
+                ) {
+                  cells.push(cell as HTMLElement)
+                }
+              } else {
+                if (
+                  cell.querySelector('.gradebook__ng-universal-rating-comments') &&
+                  !cell.querySelector('.pseudo-button--color-red') &&
+                  removeRating ===
+                    Number(
+                      (
+                        cell.querySelector('.badge__item--no-border') as HTMLElement
+                      )?.innerText.trim()
+                    )
+                ) {
+                  cells.push(cell as HTMLElement)
+                }
+              }
+            }
           }
         }
-      })()
+      } else {
+        const items = [
+          ...document.querySelectorAll(
+            '.gradebook-container__table .gradebook-container__table2-row .gradebook-narrow__cell.smart-cell'
+          ),
+        ]
+
+        for (const item of items) {
+          for (const cell of [...item.querySelectorAll('.gradebook-narrow__cell.smart-cell')]) {
+            if (removeAllRating) {
+              if (
+                cell.querySelector('.gradebook__ng-universal-rating-comments') &&
+                !cell.querySelector('.pseudo-button--color-red') &&
+                (cell.querySelector('.badge__item--no-border') as HTMLElement)?.innerText.trim()
+              ) {
+                cells.push(cell as HTMLElement)
+              }
+            } else {
+              if (
+                cell.querySelector('.gradebook__ng-universal-rating-comments') &&
+                !cell.querySelector('.pseudo-button--color-red') &&
+                removeRating ===
+                  Number(
+                    (cell.querySelector('.badge__item--no-border') as HTMLElement)?.innerText.trim()
+                  )
+              ) {
+                cells.push(cell as HTMLElement)
+              }
+            }
+          }
+        }
+      }
+
+      setCurrentPercent(100 - getFillInPercent(selectedStudents))
+
+      for (const cell of cells) {
+        await processItem({
+          item: cell,
+          remove: true,
+        })
+
+        setCurrentPercent(100 - getFillInPercent(selectedStudents))
+
+        if (!isProcessingHasStopped.current) {
+          handleReset()
+          setToast('stop')
+          return
+        }
+      }
+
+      handleReset()
+      beep()
+      setToast('done')
     }
+
+    handleReset()
   }
 
   const handleSelectedStudent = (selectedOption: MultiValue<unknown>) => {
-    setSelectedStudents(selectedOption as unknown as Student[])
+    const students = selectedOption as unknown as Student[]
 
-    if (selectedOption && selectedOption.length > 1) {
-      setCurrentPercent(getFillInPercent(selectedStudents))
+    setSelectedStudents(students)
+
+    if (students) {
+      setCurrentPercent(getFillInPercent(students))
       setPercentError('')
     } else {
       setCurrentPercent(getFillInPercent())
@@ -351,10 +497,11 @@ function App() {
   return isProcessing ? (
     <>
       <Modal show onHide={handleClose} centered>
-        <Modal.Header closeButton>
+        <Modal.Header className="justify-content-center" closeButton>
           <Modal.Title as="h5">
-            <Atom />
-            <span>Human Automator</span>
+            <div className="d-flex gap-1">
+              <Bot /> Human Automator
+            </div>
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
@@ -369,6 +516,11 @@ function App() {
             />
             <div>
               Обробка ... <span className="fw-bold">{currentPercent}%</span>
+              {maxPercent < 100 && (
+                <>
+                  із <span className="fw-bold">{maxPercent}%</span>
+                </>
+              )}
             </div>
           </div>
         </Modal.Body>
@@ -386,7 +538,7 @@ function App() {
           <Toast onClose={() => setToast('')} show={!!isToast} delay={10000} autohide bg="danger">
             <Toast.Header className="text-white justify-content-center" closeButton>
               <strong className="d-flex align-items-center gap-1">
-                <Atom /> Human Automator
+                <Bot /> Human Automator
               </strong>
             </Toast.Header>
             <Toast.Body className="text-white">
@@ -401,7 +553,7 @@ function App() {
           <Toast onClose={() => setToast('')} show={!!isToast} delay={10000} autohide bg="success">
             <Toast.Header className="text-white justify-content-center" closeButton>
               <strong className="d-flex align-items-center gap-1">
-                <Atom /> Human Automator
+                <Bot /> Human Automator
               </strong>
             </Toast.Header>
             <Toast.Body className="text-white">
@@ -413,11 +565,10 @@ function App() {
 
       <Modal show={true} onHide={handleClose} centered>
         <Form onSubmit={handleSubmit}>
-          <Modal.Header closeButton>
+          <Modal.Header className="justify-content-center" closeButton>
             <Modal.Title as="h5">
-              <div className="">
-                <Atom size={24} />
-                <span>Human Automator</span>
+              <div className="d-flex gap-1">
+                <Bot /> Human Automator
               </div>
             </Modal.Title>
           </Modal.Header>
@@ -430,7 +581,7 @@ function App() {
                   id="human_automator_action_set_rating"
                   value="set_rating"
                   label="Проставити учням оцінки"
-                  onClick={() => setAction('set_rating')}
+                  onChange={(e) => (e.target.checked ? setAction('set_rating') : setAction(''))}
                   checked={isSetRating}
                   disabled={isSubmitting}
                 />
@@ -439,8 +590,8 @@ function App() {
                   id="human_automator_action_delete_rating"
                   value="delete_rating"
                   label="Видалити учням оцінки"
-                  onClick={() => setAction('delete_rating')}
-                  checked={showDeleteRating}
+                  onChange={(e) => (e.target.checked ? setAction('delete_rating') : setAction(''))}
+                  checked={isDeleteRating}
                   disabled={isSubmitting}
                 />
                 <Form.Check
@@ -448,7 +599,9 @@ function App() {
                   id="human_automator_action_rating_count"
                   value="show_rating_count"
                   label="Показати яких і скільки оцінок"
-                  onClick={() => setAction('show_rating_count')}
+                  onChange={(e) =>
+                    e.target.checked ? setAction('show_rating_count') : setAction('')
+                  }
                   checked={showShowRatingCount}
                   disabled={isSubmitting}
                 />
@@ -465,9 +618,9 @@ function App() {
                     <Accordion.Body>
                       <div className="fst-italic">
                         <p>
-                          <span className="fw-bold">Проставити обраним учням оцінки</span> —
-                          Дозволяє заповнити <span className="fw-bold">НЕ</span> виставлені оцінки
-                          на цій сторінці для обраних учнів.
+                          <span className="fw-bold">Проставити учням оцінки</span> — Дозволяє
+                          заповнити <span className="fw-bold">НЕ</span> виставлені оцінки на цій
+                          сторінці для обраних учнів.
                         </p>
                         <p>
                           Можна обрати, які оцінки ставити (від мінімальної до максимальної), також
@@ -483,11 +636,9 @@ function App() {
                 </Accordion>
                 <Card className="mt-3">
                   <Card.Body>
-                    <Form.Label className="fw-bold" htmlFor="human_automator_students">
-                      Оберіть учнів
-                    </Form.Label>
+                    <Form.Label className="fw-bold">Оберіть учнів</Form.Label>
                     <Select
-                      id="human_automator_students"
+                      className="mb-2"
                       placeholder="Оберіть учнів"
                       options={getStudentsList()}
                       onChange={(options) => handleSelectedStudent(options)}
@@ -496,17 +647,17 @@ function App() {
                       components={animatedComponents}
                       isDisabled={isSubmitting}
                     />
-                    <Form.Text className="mt-3">
-                      <span className="fw-bold">Оберіть учнів</span> яким бажаєте ставити оцінки,
+                    <Form.Text>
+                      <span className="fw-bold">Оберіть учнів</span> яким бажаєте виставити оцінки,
                       або яким <span className="fw-bold">НЕ</span> ставити оцінки.
                     </Form.Text>
                   </Card.Body>
                 </Card>
                 <Card className="mt-3">
                   <Card.Body>
-                    <Form.Group className="mb-3" controlId="human_automator_min_rating">
+                    <Form.Group>
                       <Form.Label className="fw-bold">Мінімальна оцінка</Form.Label>
-                      <InputGroup>
+                      <InputGroup className="mb-2">
                         <Form.Control
                           type="number"
                           min="1"
@@ -522,18 +673,18 @@ function App() {
                         />
                         <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
                       </InputGroup>
-                      <Form.Text className="mt-3">
-                        <span className="fw-bold">Введіть мінімальну оцінку</span>, яку бажаєте
-                        ставити, наприклад, <span className="fw-bold">6</span>
+                      <Form.Text>
+                        <span className="fw-bold">Мінімальна оцінка</span>, яку бажаєте поставити,
+                        наприклад, <span className="fw-bold">6</span>
                       </Form.Text>
                     </Form.Group>
                   </Card.Body>
                 </Card>
                 <Card className="mt-3">
                   <Card.Body>
-                    <Form.Group className="mb-3" controlId="human_automator_max_rating">
+                    <Form.Group>
                       <Form.Label className="fw-bold">Максимальна оцінка</Form.Label>
-                      <InputGroup>
+                      <InputGroup className="mb-2">
                         <Form.Control
                           type="number"
                           min="1"
@@ -549,18 +700,18 @@ function App() {
                         />
                         <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
                       </InputGroup>
-                      <Form.Text className="mt-3">
-                        <span className="fw-bold">Введіть максимальну оцінку</span>, яку бажаєте
-                        ставити, наприклад, <span className="fw-bold">12</span>
+                      <Form.Text>
+                        <span className="fw-bold">Максимальна оцінка</span>, яку бажаєте поставити,
+                        наприклад, <span className="fw-bold">12</span>
                       </Form.Text>
                     </Form.Group>
                   </Card.Body>
                 </Card>
                 <Card className="mt-3">
                   <Card.Body>
-                    <Form.Group className="mb-3" controlId="human_automator_max_percent">
+                    <Form.Group>
                       <Form.Label className="fw-bold">Максимальний відсоток заповнення</Form.Label>
-                      <InputGroup>
+                      <InputGroup className="mb-2">
                         <Form.Control
                           type="number"
                           min={currentPercent}
@@ -578,10 +729,11 @@ function App() {
                         />
                         <Form.Control.Feedback type="invalid">{percentError}</Form.Control.Feedback>
                       </InputGroup>
-                      <Form.Text className="mt-3">
-                        <span className="fw-bold">Введіть максимальний відсоток заповнення</span>{' '}
-                        оцінок, наприклад, зараз є заповнення на{' '}
+                      <Form.Text>
+                        <span className="fw-bold">Максимальний відсоток заповнення</span> оцінок,
+                        наприклад, зараз є заповнення на{' '}
                         <span className="fw-bold">{currentPercent}%</span>
+                        {selectedStudents && selectedStudents.length > 0 && <> для обраних учнів</>}
                       </Form.Text>
                     </Form.Group>
                   </Card.Body>
@@ -589,16 +741,93 @@ function App() {
               </>
             )}
 
-            {showDeleteRating && (
-              <div className="fw-lighter">
-                <p>
-                  <b>Видалити учням оцінки</b> — Дозволяє видалити виставлені оцінки на цій сторінці
-                  для обраних учнів.
-                </p>
-                <p>
-                  Можна обрати, які саме оцінки треба видалити, наприклад тільки <b>6</b>
-                </p>
-              </div>
+            {isDeleteRating && (
+              <>
+                <Accordion className="mt-3">
+                  <Accordion.Item eventKey="0">
+                    <Accordion.Header>
+                      <span className="fw-bold">Опис</span>
+                    </Accordion.Header>
+                    <Accordion.Body>
+                      <div className="fst-italic">
+                        <p>
+                          <span className="fw-bold">Видалити учням оцінки </span> — Дозволяє
+                          видалити виставлені оцінки на цій сторінці для обраних учнів.
+                        </p>
+                        <p>
+                          Можна обрати, які саме оцінки треба видалити, наприклад, тільки{' '}
+                          <span className="fw-bold">6</span>
+                        </p>
+                      </div>
+                    </Accordion.Body>
+                  </Accordion.Item>
+                </Accordion>
+                <Card className="mt-3">
+                  <Card.Body>
+                    <Form.Label className="fw-bold">Оберіть учнів</Form.Label>
+                    <Select
+                      className="mb-2"
+                      placeholder="Оберіть учнів"
+                      options={getStudentsList()}
+                      onChange={(options) => handleSelectedStudent(options)}
+                      isMulti
+                      closeMenuOnSelect={false}
+                      components={animatedComponents}
+                      isDisabled={isSubmitting}
+                    />
+                    <Form.Text>
+                      <p>
+                        <span className="fw-bold">Оберіть учнів</span>, яким бажаєте видалити оцінки
+                      </p>
+                      <p>
+                        Якщо <span className="fw-bold">НЕ</span> буде обрано жодного учня то, оцінки
+                        буде видалено <span className="fw-bold">усім учням</span>
+                      </p>
+                    </Form.Text>
+                  </Card.Body>
+                </Card>
+                {!removeAllRating && (
+                  <Card className="mt-3">
+                    <Card.Body>
+                      <Form.Group>
+                        <Form.Label className="fw-bold">Оцінка</Form.Label>
+                        <InputGroup className="mb-2">
+                          <Form.Control
+                            type="number"
+                            min="1"
+                            max="12"
+                            placeholder="Введіть оцінку яку бажаєте видалити"
+                            required
+                            disabled={isSubmitting}
+                            onChange={(e) => {
+                              setRemoveRating(Number(e.target.value))
+                            }}
+                          />
+                        </InputGroup>
+                        <Form.Text>
+                          <span className="fw-bold">Оцінка</span>, яку бажаєте видалити, наприклад,{' '}
+                          <span className="fw-bold">6</span>
+                        </Form.Text>
+                      </Form.Group>
+                    </Card.Body>
+                  </Card>
+                )}
+                <Card className="mt-3">
+                  <Card.Body>
+                    <Form.Check
+                      className="mb-2"
+                      type="switch"
+                      label="Видалити всі оцінки"
+                      onChange={(e) => setRemoveAllRating(e.target.checked)}
+                      defaultValue={removeAllRating ? 'true' : 'false'}
+                      disabled={isSubmitting}
+                    />
+                    <Form.Text>
+                      Буде видалено <span className="fw-bold">усі оцінки</span>
+                    </Form.Text>
+                  </Card.Body>
+                </Card>
+              </>
             )}
 
             {showShowRatingCount && (
