@@ -42,7 +42,7 @@ function App() {
 
   const studentsList = useMemo(() => students(), [students])
 
-  const [isRunRatingCount, setRunRatingCount] = useState<boolean>(false)
+  const [isRunCountRating, setCountRating] = useState<boolean>(false)
   const [selectedStudents, setSelectedStudents] = useState<Student[] | undefined>(undefined)
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
   const [minRating, setMinRating] = useState<number>(0)
@@ -228,15 +228,13 @@ function App() {
         }
       }
 
-      setCurrentPercent(100 - fillPercent(selectedStudents))
-
       for (const cell of cells) {
         await processItem({
           item: cell,
           remove: true,
         })
 
-        setCurrentPercent(100 - fillPercent(selectedStudents))
+        setCurrentPercent(fillPercent(selectedStudents))
 
         if (!isProcessingRef.current) {
           handleReset()
@@ -252,7 +250,7 @@ function App() {
     if (isCountRating) {
       setIsSubmitting(true)
       setIsProcessing(true)
-      setRunRatingCount(true)
+      setCountRating(true)
       setToast('done')
       beep()
     }
@@ -265,7 +263,7 @@ function App() {
     setPercentError('')
   }, [])
 
-  if (isRunRatingCount) {
+  if (isRunCountRating) {
     return (
       <>
         <Modal show onHide={handleClose} centered>
@@ -292,7 +290,14 @@ function App() {
       <Modal show onHide={handleClose} centered>
         <Header />
         <Modal.Body>
-          <ProgressBar key={currentPercent} now={currentPercent} variant="success" />
+          <ProgressBar
+            key={currentPercent}
+            now={isDeleteRating ? 100 - currentPercent : currentPercent}
+            max={isDeleteRating ? 100 - maxPercent : maxPercent}
+            variant="success"
+            animated
+          />
+
           <div className="d-flex gap-1 mt-3 mb-0 justify-content-center align-items-center">
             <RotatingLines
               color="black"
@@ -302,7 +307,10 @@ function App() {
               width="24"
             />
             <div>
-              Обробка ... <span className="fw-bold">{currentPercent}%</span>
+              Обробка ...{' '}
+              <span className="fw-bold">
+                {isDeleteRating ? 100 - currentPercent : currentPercent}%
+              </span>
               {maxPercent < 100 && maxPercent > 0 && (
                 <>
                   {' '}
