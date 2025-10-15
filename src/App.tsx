@@ -30,6 +30,8 @@ function App() {
     studentName,
     students,
     fillPercent,
+    toolPanel,
+    cellRemoveSelected,
   } = useGradeBook()
 
   const studentsList = useMemo(() => students(), [students])
@@ -85,6 +87,8 @@ function App() {
     setPercentError('')
     setMaxPercent(0)
     setCurrentPercent(fillPercent())
+    toolPanel(false)
+    cellRemoveSelected(false)
   }
 
   const handleClose = () => window.location.reload()
@@ -92,11 +96,16 @@ function App() {
   const handleStopProcessing = () => {
     setIsSubmitting(false)
     setIsProcessing(false)
+    toolPanel(false)
+    cellRemoveSelected(false)
     setToast('stop')
   }
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+
+    toolPanel(true)
+    cellRemoveSelected(true)
 
     if (isSetRating) {
       if (minRating > maxRating) {
@@ -142,7 +151,7 @@ function App() {
 
       for (const cell of shuffleArray(emptyCells)) {
         await processItem({
-          item: cell,
+          cell,
           minRating,
           maxRating,
         })
@@ -172,57 +181,43 @@ function App() {
 
       const cells: HTMLElement[] = []
 
-      if (selectedStudents) {
-        for (const row of rows) {
-          if (selectedStudents.find((student) => student.value === studentName(row))) {
-            for (const cell of [...cellsNarrow(row)]) {
-              if (removeAllRating) {
-                if (
-                  ratingComment(cell as HTMLElement) &&
-                  !cellAbsent(cell as HTMLElement) &&
-                  rating(cell as HTMLElement)
-                ) {
-                  cells.push(cell as HTMLElement)
-                }
-              } else {
-                if (
-                  ratingComment(cell as HTMLElement) &&
-                  !cellAbsent(cell as HTMLElement) &&
-                  removeRating === rating(cell as HTMLElement)
-                ) {
-                  cells.push(cell as HTMLElement)
-                }
-              }
+      const processRow = (row: HTMLElement): void => {
+        for (const cell of [...cellsNarrow(row)]) {
+          if (removeAllRating) {
+            if (
+              ratingComment(cell as HTMLElement) &&
+              !cellAbsent(cell as HTMLElement) &&
+              rating(cell as HTMLElement)
+            ) {
+              cells.push(cell as HTMLElement)
             }
-          }
-        }
-      } else {
-        for (const itemCell of cells) {
-          for (const cell of [...cellsNarrow(itemCell)]) {
-            if (removeAllRating) {
-              if (
-                ratingComment(cell as HTMLElement) &&
-                !cellAbsent(cell as HTMLElement) &&
-                rating(cell as HTMLElement)
-              ) {
-                cells.push(cell as HTMLElement)
-              }
-            } else {
-              if (
-                ratingComment(cell as HTMLElement) &&
-                !cellAbsent(cell as HTMLElement) &&
-                removeRating === rating(cell as HTMLElement)
-              ) {
-                cells.push(cell as HTMLElement)
-              }
+          } else {
+            if (
+              ratingComment(cell as HTMLElement) &&
+              !cellAbsent(cell as HTMLElement) &&
+              removeRating === rating(cell as HTMLElement)
+            ) {
+              cells.push(cell as HTMLElement)
             }
           }
         }
       }
 
+      if (selectedStudents) {
+        for (const row of rows) {
+          if (selectedStudents.find((student) => student.value === studentName(row))) {
+            processRow(row)
+          }
+        }
+      } else {
+        for (const row of rows) {
+          processRow(row)
+        }
+      }
+
       for (const cell of cells) {
         await processItem({
-          item: cell,
+          cell,
           remove: true,
         })
 

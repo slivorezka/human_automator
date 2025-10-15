@@ -1,22 +1,25 @@
 import { useEffect, useState, useRef } from 'react'
 import { getRandomInt } from '../utils/gradebook'
 import { TIMING } from '../constants/config'
+import useGradeBook from './useGradeBook.ts'
 
 const useProcessing = () => {
   const [isProcessing, setIsProcessing] = useState<boolean>(false)
   const isProcessingRef = useRef<boolean>(false)
+
+  const { cellRemoveSelected } = useGradeBook()
 
   useEffect(() => {
     isProcessingRef.current = isProcessing
   }, [isProcessing])
 
   const processItem = async ({
-    item,
+    cell,
     minRating,
     maxRating,
     remove,
   }: {
-    item: HTMLElement
+    cell: HTMLElement
     minRating?: number
     maxRating?: number
     remove?: boolean
@@ -28,8 +31,10 @@ const useProcessing = () => {
           return
         }
 
-        item.click()
-        item.scrollIntoView({
+        cellRemoveSelected(false, cell)
+
+        cell.click()
+        cell.scrollIntoView({
           behavior: 'smooth',
           block: 'center',
           inline: 'nearest',

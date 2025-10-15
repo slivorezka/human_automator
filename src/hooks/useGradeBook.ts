@@ -102,6 +102,39 @@ const useGradeBook = () => {
     return Math.round((filedCells.length / (filedCells.length + emptyCells.length)) * 100)
   }
 
+  const toolPanel = (isHide: boolean): void => {
+    const toolPanel = document.querySelector('.gradebook-page__tool-panel')
+
+    if (isHide) {
+      toolPanel?.classList.add('d-none')
+    } else {
+      toolPanel?.classList.remove('d-none')
+    }
+  }
+
+  const cellRemoveSelected = (isRemove: boolean, cell?: HTMLElement): void => {
+    if (cell) {
+      if (isRemove) {
+        cell.classList.add('remove-smart-cell-selected')
+      } else {
+        cell.classList.remove('remove-smart-cell-selected')
+      }
+      return
+    }
+
+    const cells = document.querySelectorAll('.gradebook-narrow__cell.smart-cell')
+
+    if (isRemove) {
+      cells.forEach((cell) => {
+        cell.classList.add('remove-smart-cell-selected')
+      })
+    } else {
+      cells.forEach((cell) => {
+        cell.classList.remove('remove-smart-cell-selected')
+      })
+    }
+  }
+
   return {
     rows,
     cells,
@@ -112,6 +145,8 @@ const useGradeBook = () => {
     studentName,
     students,
     fillPercent,
+    toolPanel,
+    cellRemoveSelected,
   }
 }
 

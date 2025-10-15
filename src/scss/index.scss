@@ -1,6 +1,16 @@
 @use 'bootstrap/dist/css/bootstrap.min.css';
 @use 'fonts.scss';
 
+.gradebook-narrow__cell {
+  &.smart-cell {
+    &.remove-smart-cell-selected {
+      background: none !important;
+      box-shadow: none !important;
+    }
+  }
+}
+
+
 .toast {
   .btn-close {
     position: absolute;
