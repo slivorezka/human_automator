@@ -1,15 +1,5 @@
 import { useEffect, useState, useMemo, useCallback, type FormEvent } from 'react'
-import {
-  Toast,
-  ToastContainer,
-  Button,
-  Card,
-  Modal,
-  InputGroup,
-  ProgressBar,
-  Form,
-} from 'react-bootstrap'
-import { Bot } from 'lucide-react'
+import { Button, Card, Modal, InputGroup, ProgressBar, Form } from 'react-bootstrap'
 import Select from 'react-select'
 import type { MultiValue } from 'react-select'
 import makeAnimated from 'react-select/animated'
@@ -23,6 +13,7 @@ import useProcessing from './hooks/useProcessing'
 import { shuffleArray, beep } from './utils/gradebook'
 import type { Student } from './types'
 import { EXAMPLE_RATING, MAX_RATING, MIN_RATING } from './constants/config.ts'
+import Message from './components/Message'
 
 function App() {
   const animatedComponents = makeAnimated()
@@ -331,33 +322,15 @@ function App() {
   ) : (
     <>
       {isToast == 'stop' && (
-        <ToastContainer position="top-end" className="p-3">
-          <Toast onClose={() => setToast('')} show={!!isToast} delay={10000} autohide bg="danger">
-            <Toast.Header className="text-white justify-content-center" closeButton>
-              <strong className="d-flex align-items-center gap-1">
-                <Bot /> Human Automator
-              </strong>
-            </Toast.Header>
-            <Toast.Body className="text-white fw-bold text-center">
-              Операцію було скасовано!
-            </Toast.Body>
-          </Toast>
-        </ToastContainer>
+        <Message show={!!isToast} onClose={() => setToast('')}>
+          Операцію було скасовано!
+        </Message>
       )}
 
       {isToast == 'done' && (
-        <ToastContainer position="top-end" className="p-3">
-          <Toast onClose={() => setToast('')} show={!!isToast} delay={10000} autohide bg="success">
-            <Toast.Header className="text-white justify-content-center" closeButton>
-              <strong className="d-flex align-items-center gap-1">
-                <Bot /> Human Automator
-              </strong>
-            </Toast.Header>
-            <Toast.Body className="text-white fw-bold text-center">
-              Операцію було успішно завершено!
-            </Toast.Body>
-          </Toast>
-        </ToastContainer>
+        <Message show={!!isToast} onClose={() => setToast('')}>
+          Операцію було успішно завершено!
+        </Message>
       )}
 
       <Modal show={true} onHide={handleClose} centered>
