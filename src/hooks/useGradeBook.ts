@@ -13,6 +13,27 @@ const useGradeBook = () => {
     ) as unknown as HTMLElement[]),
   ]
 
+  const cellRating = (cell: HTMLElement): HTMLElement | null => {
+    return cell.querySelector('.badge__item--no-border')
+  }
+
+  const rating = (cell: HTMLElement): number | null => {
+    const rating = cellRating(cell)?.innerText.trim()
+    return rating ? Number(rating) : null
+  }
+
+  const ratingComment = (cell: HTMLElement): HTMLElement | null => {
+    return cell.querySelector('.gradebook__ng-universal-rating-comments')
+  }
+
+  const cellAbsent = (cell: HTMLElement): HTMLElement | null => {
+    return cell.querySelector('.pseudo-button--color-red')
+  }
+
+  const cellsNarrow = (row: HTMLElement): NodeListOf<HTMLElement> => {
+    return row.querySelectorAll('.gradebook-narrow__cell.smart-cell')
+  }
+
   const studentName = (row: HTMLElement): string => {
     return (row.querySelector('.bem-user__name') as HTMLElement).innerText.trim()
   }
@@ -39,19 +60,19 @@ const useGradeBook = () => {
     if (students && students.length > 0) {
       for (const row of rows) {
         if (students.find((student) => student.value === studentName(row))) {
-          for (const cell of [...row.querySelectorAll('.gradebook-narrow__cell.smart-cell')]) {
+          for (const cell of [...cellsNarrow(row)]) {
             if (
-              cell.querySelector('.gradebook__ng-universal-rating-comments') &&
-              !cell.querySelector('.pseudo-button--color-red') &&
-              (cell.querySelector('.badge__item--no-border') as HTMLElement)?.innerText.trim()
+              ratingComment(cell as HTMLElement) &&
+              !cellAbsent(cell as HTMLElement) &&
+              rating(cell as HTMLElement)
             ) {
               filedCells.push(cell)
             }
 
             if (
-              cell.querySelector('.gradebook__ng-universal-rating-comments') &&
-              !cell.querySelector('.pseudo-button--color-red') &&
-              !(cell.querySelector('.badge__item--no-border') as HTMLElement)?.innerText.trim()
+              ratingComment(cell as HTMLElement) &&
+              !cellAbsent(cell as HTMLElement) &&
+              !rating(cell as HTMLElement)
             ) {
               emptyCells.push(cell)
             }
@@ -61,17 +82,17 @@ const useGradeBook = () => {
     } else {
       for (const cell of cells) {
         if (
-          cell.querySelector('.gradebook__ng-universal-rating-comments') &&
-          !cell.querySelector('.pseudo-button--color-red') &&
-          cell.querySelector('.badge__item--no-border')
+          ratingComment(cell as HTMLElement) &&
+          !cellAbsent(cell as HTMLElement) &&
+          cellRating(cell as HTMLElement)
         ) {
           filedCells.push(cell)
         }
 
         if (
-          cell.querySelector('.gradebook__ng-universal-rating-comments') &&
-          !cell.querySelector('.pseudo-button--color-red') &&
-          !(cell.querySelector('.badge__item--no-border') as HTMLElement)?.innerText.trim()
+          ratingComment(cell as HTMLElement) &&
+          !cellAbsent(cell as HTMLElement) &&
+          !rating(cell as HTMLElement)
         ) {
           emptyCells.push(cell)
         }
@@ -81,7 +102,17 @@ const useGradeBook = () => {
     return Math.round((filedCells.length / (filedCells.length + emptyCells.length)) * 100)
   }
 
-  return { rows, cells, studentName, students, fillPercent }
+  return {
+    rows,
+    cells,
+    cellsNarrow,
+    cellAbsent,
+    rating,
+    ratingComment,
+    studentName,
+    students,
+    fillPercent,
+  }
 }
 
 export default useGradeBook
