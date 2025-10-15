@@ -5,7 +5,6 @@ import {
   Button,
   Card,
   Modal,
-  Accordion,
   InputGroup,
   ProgressBar,
   Form,
@@ -15,6 +14,9 @@ import Select from 'react-select'
 import type { MultiValue } from 'react-select'
 import makeAnimated from 'react-select/animated'
 import { RotatingLines } from 'react-loader-spinner'
+import RatingCount from './components/RatingCount'
+import Description from './components/Description'
+import Header from './components/Header'
 
 interface Student {
   value: string
@@ -142,7 +144,8 @@ function App() {
   const [action, setAction] = useState<string>('')
   const [isSetRating, setRating] = useState<boolean>(false)
   const [isDeleteRating, deleteRating] = useState<boolean>(false)
-  const [showShowRatingCount, setShowRatingCount] = useState<boolean>(false)
+  const [isRatingCount, setRatingCount] = useState<boolean>(false)
+  const [isRunRatingCount, setRunRatingCount] = useState<boolean>(false)
   const [selectedStudents, setSelectedStudents] = useState<Student[] | undefined>(undefined)
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
   const [isProcessing, setIsProcessing] = useState<boolean>(false)
@@ -166,26 +169,26 @@ function App() {
       case 'set_rating':
         setRating(true)
         deleteRating(false)
-        setShowRatingCount(false)
+        setRatingCount(false)
 
         break
 
       case 'delete_rating':
         setRating(false)
         deleteRating(true)
-        setShowRatingCount(false)
+        setRatingCount(false)
         break
 
       case 'show_rating_count':
         setRating(false)
         deleteRating(false)
-        setShowRatingCount(true)
+        setRatingCount(true)
         break
 
       default:
         setRating(false)
         deleteRating(false)
-        setShowRatingCount(false)
+        setRatingCount(false)
     }
   }, [action])
 
@@ -197,7 +200,7 @@ function App() {
     setAction('')
     setRating(false)
     deleteRating(false)
-    setShowRatingCount(false)
+    setRatingCount(false)
     setSelectedStudents(undefined)
     setIsSubmitting(false)
     setIsProcessing(false)
@@ -475,6 +478,14 @@ function App() {
       beep()
     }
 
+    if (isRatingCount) {
+      setIsSubmitting(true)
+      setIsProcessing(true)
+      setRunRatingCount(true)
+      setToast('done')
+      beep()
+    }
+
     handleReset()
   }
 
@@ -492,16 +503,32 @@ function App() {
     }
   }
 
+  if (isRunRatingCount) {
+    return (
+      <>
+        <Modal show onHide={handleClose} centered>
+          <Header />
+          <Modal.Body>
+            <Card>
+              <Card.Body>
+                <RatingCount />
+              </Card.Body>
+            </Card>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="danger" onClick={handleClose}>
+              Закрити
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      </>
+    )
+  }
+
   return isProcessing ? (
     <>
       <Modal show onHide={handleClose} centered>
-        <Modal.Header className="justify-content-center" closeButton>
-          <Modal.Title as="h5">
-            <div className="d-flex gap-1">
-              <Bot /> Human Automator
-            </div>
-          </Modal.Title>
-        </Modal.Header>
+        <Header />
         <Modal.Body>
           <ProgressBar key={currentPercent} now={currentPercent} variant="success" />
           <div className="d-flex gap-1 mt-3 mb-0 justify-content-center align-items-center">
@@ -564,21 +591,13 @@ function App() {
 
       <Modal show={true} onHide={handleClose} centered>
         <Form onSubmit={handleSubmit}>
-          <Modal.Header className="justify-content-center" closeButton>
-            <Modal.Title as="h5">
-              <div className="d-flex gap-1">
-                <Bot /> Human Automator
-              </div>
-            </Modal.Title>
-          </Modal.Header>
+          <Header />
           <Modal.Body>
             <Card>
               <Card.Body>
                 <Form.Label className="fw-bold">Дія</Form.Label>
                 <Form.Check
                   type="switch"
-                  id="human_automator_action_set_rating"
-                  value="set_rating"
                   label="Проставити учням оцінки"
                   onChange={(e) => (e.target.checked ? setAction('set_rating') : setAction(''))}
                   checked={isSetRating}
@@ -586,8 +605,6 @@ function App() {
                 />
                 <Form.Check
                   type="switch"
-                  id="human_automator_action_delete_rating"
-                  value="delete_rating"
                   label="Видалити учням оцінки"
                   onChange={(e) => (e.target.checked ? setAction('delete_rating') : setAction(''))}
                   checked={isDeleteRating}
@@ -595,13 +612,11 @@ function App() {
                 />
                 <Form.Check
                   type="switch"
-                  id="human_automator_action_rating_count"
-                  value="show_rating_count"
                   label="Показати яких і скільки оцінок"
                   onChange={(e) =>
                     e.target.checked ? setAction('show_rating_count') : setAction('')
                   }
-                  checked={showShowRatingCount}
+                  checked={isRatingCount}
                   disabled={isSubmitting}
                 />
               </Card.Body>
@@ -609,30 +624,20 @@ function App() {
 
             {isSetRating && (
               <>
-                <Accordion className="mt-3">
-                  <Accordion.Item eventKey="0">
-                    <Accordion.Header>
-                      <span className="fw-bold">Опис</span>
-                    </Accordion.Header>
-                    <Accordion.Body>
-                      <div className="fst-italic">
-                        <p>
-                          <span className="fw-bold">Проставити учням оцінки</span> — Дозволяє
-                          заповнити <span className="fw-bold">НЕ</span> виставлені оцінки на цій
-                          сторінці для обраних учнів.
-                        </p>
-                        <p>
-                          Можна обрати, які оцінки ставити (від мінімальної до максимальної), також
-                          можна обрати бажаний відсоток заповнення від загальної кількості оцінок.
-                        </p>
-                        <p>
-                          Оцінки будь виставлені у <span className="fw-bold">випадковому</span>{' '}
-                          порядку.
-                        </p>
-                      </div>
-                    </Accordion.Body>
-                  </Accordion.Item>
-                </Accordion>
+                <Description>
+                  <p>
+                    <span className="fw-bold">Проставити учням оцінки</span> — Дозволяє заповнити{' '}
+                    <span className="fw-bold">НЕ</span> виставлені оцінки на цій сторінці для
+                    обраних учнів.
+                  </p>
+                  <p>
+                    Можна обрати, які оцінки ставити (від мінімальної до максимальної), також можна
+                    обрати бажаний відсоток заповнення від загальної кількості оцінок.
+                  </p>
+                  <p>
+                    Оцінки будь виставлені у <span className="fw-bold">випадковому</span> порядку.
+                  </p>
+                </Description>
                 <Card className="mt-3">
                   <Card.Body>
                     <Form.Label className="fw-bold">Оберіть учнів</Form.Label>
@@ -742,25 +747,16 @@ function App() {
 
             {isDeleteRating && (
               <>
-                <Accordion className="mt-3">
-                  <Accordion.Item eventKey="0">
-                    <Accordion.Header>
-                      <span className="fw-bold">Опис</span>
-                    </Accordion.Header>
-                    <Accordion.Body>
-                      <div className="fst-italic">
-                        <p>
-                          <span className="fw-bold">Видалити учням оцінки </span> — Дозволяє
-                          видалити виставлені оцінки на цій сторінці для обраних учнів.
-                        </p>
-                        <p>
-                          Можна обрати, які саме оцінки треба видалити, наприклад, тільки{' '}
-                          <span className="fw-bold">6</span>
-                        </p>
-                      </div>
-                    </Accordion.Body>
-                  </Accordion.Item>
-                </Accordion>
+                <Description>
+                  <p>
+                    <span className="fw-bold">Видалити учням оцінки </span> — Дозволяє видалити
+                    виставлені оцінки на цій сторінці для обраних учнів.
+                  </p>
+                  <p>
+                    Можна обрати, які саме оцінки треба видалити, наприклад, тільки{' '}
+                    <span className="fw-bold">6</span>
+                  </p>
+                </Description>
                 <Card className="mt-3">
                   <Card.Body>
                     <Form.Label className="fw-bold">Оберіть учнів</Form.Label>
@@ -829,28 +825,39 @@ function App() {
               </>
             )}
 
-            {showShowRatingCount && (
-              <div className="fw-lighter">
-                <p>
-                  <b>Показати яких і скільки оцінок</b> — Дозволяє показати яких і скільки оцінок у
-                  класі.
-                </p>
-                <p>
-                  Треба перейти на сторінку <b>І</b> або <b>ІІ</b> семестру:
-                </p>
-                <hr />
-                <ul>
-                  <li>
-                    <b>Простори</b>
-                  </li>
-                  <li>
-                    <b>Підсумкове [обрати потрібний клас]</b>
-                  </li>
-                  <li>
-                    <b>І / ІІ семестр</b>
-                  </li>
-                </ul>
-              </div>
+            {isRatingCount && (
+              <>
+                <Description>
+                  <p>
+                    <b>Показати яких і скільки оцінок</b> — Дозволяє показати яких і скільки оцінок
+                    у класі.
+                  </p>
+                  <p>
+                    Треба перейти на сторінку <b>І</b> або <b>ІІ</b> семестру:
+                  </p>
+                  <hr />
+                  <ul>
+                    <li>
+                      <b>Простори</b>
+                    </li>
+                    <li>
+                      <b>Підсумкове [обрати потрібний клас]</b>
+                    </li>
+                    <li>
+                      <b>І / ІІ семестр</b>
+                    </li>
+                  </ul>
+                </Description>
+                <Card className="mt-3">
+                  <Card.Body>
+                    <div className="fst-italic">
+                      Щоб подивитися результат, виконайте умови, які зазначені в{' '}
+                      <span className="fw-bold">Описі</span>, і потім натисніть кнопку{' '}
+                      <span className="fw-bold">Почати</span>
+                    </div>
+                  </Card.Body>
+                </Card>
+              </>
             )}
           </Modal.Body>
           <Modal.Footer className="justify-content-between">
