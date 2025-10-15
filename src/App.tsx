@@ -22,6 +22,7 @@ import useAction from './hooks/useAction'
 import useProcessing from './hooks/useProcessing'
 import { shuffleArray, beep } from './utils/gradebook'
 import type { Student } from './types'
+import { EXAMPLE_RATING, MAX_RATING, MIN_RATING } from './constants/config.ts'
 
 function App() {
   const animatedComponents = makeAnimated()
@@ -432,8 +433,8 @@ function App() {
                       <InputGroup className="mb-2">
                         <Form.Control
                           type="number"
-                          min="1"
-                          max="12"
+                          min={MIN_RATING}
+                          max={MAX_RATING}
                           placeholder="Введіть мінімальну оцінку"
                           required
                           disabled={isSubmitting}
@@ -447,7 +448,7 @@ function App() {
                       </InputGroup>
                       <Form.Text>
                         <span className="fw-bold">Мінімальна оцінка</span>, яку бажаєте поставити,
-                        наприклад, <span className="fw-bold">6</span>
+                        наприклад, <span className="fw-bold">{EXAMPLE_RATING}</span>
                       </Form.Text>
                     </Form.Group>
                   </Card.Body>
@@ -459,8 +460,8 @@ function App() {
                       <InputGroup className="mb-2">
                         <Form.Control
                           type="number"
-                          min="1"
-                          max="12"
+                          min={MIN_RATING}
+                          max={MAX_RATING}
                           placeholder="Введіть максимальну оцінку"
                           required
                           disabled={isSubmitting}
@@ -474,7 +475,7 @@ function App() {
                       </InputGroup>
                       <Form.Text>
                         <span className="fw-bold">Максимальна оцінка</span>, яку бажаєте поставити,
-                        наприклад, <span className="fw-bold">12</span>
+                        наприклад, <span className="fw-bold">{MAX_RATING}</span>
                       </Form.Text>
                     </Form.Group>
                   </Card.Body>
@@ -522,7 +523,7 @@ function App() {
                   </p>
                   <p>
                     Можна обрати, які саме оцінки треба видалити, наприклад, тільки{' '}
-                    <span className="fw-bold">6</span>
+                    <span className="fw-bold">{EXAMPLE_RATING}</span>
                   </p>
                 </Description>
                 <Card className="mt-3">
@@ -557,8 +558,8 @@ function App() {
                         <InputGroup className="mb-2">
                           <Form.Control
                             type="number"
-                            min="1"
-                            max="12"
+                            min={MIN_RATING}
+                            max={MAX_RATING}
                             placeholder="Введіть оцінку яку бажаєте видалити"
                             required
                             disabled={isSubmitting}
@@ -569,7 +570,7 @@ function App() {
                         </InputGroup>
                         <Form.Text>
                           <span className="fw-bold">Оцінка</span>, яку бажаєте видалити, наприклад,{' '}
-                          <span className="fw-bold">6</span>
+                          <span className="fw-bold">{EXAMPLE_RATING}</span>
                         </Form.Text>
                       </Form.Group>
                     </Card.Body>
