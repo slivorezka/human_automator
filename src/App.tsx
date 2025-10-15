@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, type FormEvent } from 'react'
+import { useEffect, useState, useMemo, useCallback, type FormEvent } from 'react'
 import {
   Toast,
   ToastContainer,
@@ -17,138 +17,24 @@ import { RotatingLines } from 'react-loader-spinner'
 import RatingCount from './components/RatingCount'
 import Description from './components/Description'
 import Header from './components/Header'
-
-interface Student {
-  value: string
-  label: string
-}
-
-const animatedComponents = makeAnimated()
-
-const beep = () => {
-  const audioCtx = new window.AudioContext()
-  const oscillator = audioCtx.createOscillator()
-
-  oscillator.type = 'sine'
-  oscillator.frequency.setValueAtTime(600, audioCtx.currentTime)
-  oscillator.connect(audioCtx.destination)
-  oscillator.start()
-  oscillator.stop(audioCtx.currentTime + 0.2)
-}
-
-const getRandomInt = (min: number, max: number) => {
-  min = Math.ceil(min)
-  max = Math.floor(max)
-
-  return Math.floor(Math.random() * (max - min + 1)) + min
-}
-
-const shuffleArray = (array: any[]) => {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[array[i], array[j]] = [array[j], array[i]]
-  }
-
-  return array
-}
-
-const getStudentsList = (): Student[] => {
-  const students: Student[] = []
-
-  const items = [
-    ...document.querySelectorAll(
-      '.gradebook-container__table2-outlet .gradebook-container__table2-row'
-    ),
-  ]
-
-  for (const row of items) {
-    const name = (row.querySelector('.bem-user__name') as HTMLElement).innerText.trim()
-
-    students.push({
-      value: name,
-      label: name,
-    })
-  }
-
-  return students
-}
-
-const getFillInPercent = (students?: Student[]): number => {
-  const filedCells = []
-  const emptyCells = []
-
-  if (students && students.length > 0) {
-    const items = [
-      ...document.querySelectorAll(
-        '.gradebook-container__table2-outlet .gradebook-container__table2-row'
-      ),
-    ]
-
-    for (const item of items) {
-      if (
-        students.find(
-          (student) =>
-            student.value ===
-            (item.querySelector('.bem-user__name') as HTMLElement).innerText.trim()
-        )
-      ) {
-        for (const cell of [...item.querySelectorAll('.gradebook-narrow__cell.smart-cell')]) {
-          if (
-            cell.querySelector('.gradebook__ng-universal-rating-comments') &&
-            !cell.querySelector('.pseudo-button--color-red') &&
-            (cell.querySelector('.badge__item--no-border') as HTMLElement)?.innerText.trim()
-          ) {
-            filedCells.push(cell)
-          }
-
-          if (
-            cell.querySelector('.gradebook__ng-universal-rating-comments') &&
-            !cell.querySelector('.pseudo-button--color-red') &&
-            !(cell.querySelector('.badge__item--no-border') as HTMLElement)?.innerText.trim()
-          ) {
-            emptyCells.push(cell)
-          }
-        }
-      }
-    }
-  } else {
-    const items = [
-      ...document.querySelectorAll(
-        '.gradebook-container__table .gradebook-container__table2-row .gradebook-narrow__cell.smart-cell'
-      ),
-    ]
-
-    for (const item of items) {
-      if (
-        item.querySelector('.gradebook__ng-universal-rating-comments') &&
-        !item.querySelector('.pseudo-button--color-red') &&
-        item.querySelector('.badge__item--no-border')
-      ) {
-        filedCells.push(item)
-      }
-
-      if (
-        item.querySelector('.gradebook__ng-universal-rating-comments') &&
-        !item.querySelector('.pseudo-button--color-red') &&
-        !(item.querySelector('.badge__item--no-border') as HTMLElement)?.innerText.trim()
-      ) {
-        emptyCells.push(item)
-      }
-    }
-  }
-
-  return Math.round((filedCells.length / (filedCells.length + emptyCells.length)) * 100)
-}
+import useGradeBook from './hooks/useGradeBook'
+import useAction from './hooks/useAction'
+import useProcessing from './hooks/useProcessing'
+import { shuffleArray, beep } from './utils/gradebook'
+import type { Student } from './types'
 
 function App() {
-  const [action, setAction] = useState<string>('')
-  const [isSetRating, setRating] = useState<boolean>(false)
-  const [isDeleteRating, deleteRating] = useState<boolean>(false)
-  const [isRatingCount, setRatingCount] = useState<boolean>(false)
+  const animatedComponents = makeAnimated()
+
+  const { action, setAction, isSetRating, isDeleteRating, isCountRating } = useAction()
+  const { isProcessing, setIsProcessing, processItem, isProcessingRef } = useProcessing()
+  const { rows, cells, studentName, students, fillPercent } = useGradeBook()
+
+  const studentsList = useMemo(() => students(), [students])
+
   const [isRunRatingCount, setRunRatingCount] = useState<boolean>(false)
   const [selectedStudents, setSelectedStudents] = useState<Student[] | undefined>(undefined)
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
-  const [isProcessing, setIsProcessing] = useState<boolean>(false)
   const [minRating, setMinRating] = useState<number>(0)
   const [maxRating, setMaxRating] = useState<number>(0)
   const [removeRating, setRemoveRating] = useState<number>(0)
@@ -157,50 +43,37 @@ function App() {
   const [percentError, setPercentError] = useState<string>('')
   const [maxPercent, setMaxPercent] = useState<number>(0)
   const [currentPercent, setCurrentPercent] = useState<number>(0)
-  const isProcessingHasStopped = useRef<boolean>(false)
   const [isToast, setToast] = useState<'' | 'stop' | 'done'>('')
 
   useEffect(() => {
-    setCurrentPercent(getFillInPercent())
-  }, [])
+    setCurrentPercent(fillPercent(selectedStudents))
+  }, [fillPercent, selectedStudents])
 
   useEffect(() => {
     switch (action) {
       case 'set_rating':
-        setRating(true)
-        deleteRating(false)
-        setRatingCount(false)
-
+        setAction('set_rating')
         break
 
       case 'delete_rating':
-        setRating(false)
-        deleteRating(true)
-        setRatingCount(false)
+        setAction('delete_rating')
         break
 
-      case 'show_rating_count':
-        setRating(false)
-        deleteRating(false)
-        setRatingCount(true)
+      case 'count_rating':
+        setAction('count_rating')
         break
 
       default:
-        setRating(false)
-        deleteRating(false)
-        setRatingCount(false)
+        setAction('')
     }
-  }, [action])
+  }, [action, setAction])
 
   useEffect(() => {
-    isProcessingHasStopped.current = isProcessing
-  }, [isProcessing])
+    isProcessingRef.current = isProcessing
+  }, [isProcessing, isProcessingRef])
 
   const handleReset = () => {
     setAction('')
-    setRating(false)
-    deleteRating(false)
-    setRatingCount(false)
     setSelectedStudents(undefined)
     setIsSubmitting(false)
     setIsProcessing(false)
@@ -209,73 +82,7 @@ function App() {
     setError('')
     setPercentError('')
     setMaxPercent(0)
-    setCurrentPercent(getFillInPercent())
-  }
-
-  const processItem = ({
-    item,
-    minRating,
-    maxRating,
-    remove,
-  }: {
-    item: HTMLElement
-    minRating?: number
-    maxRating?: number
-    remove?: boolean
-  }): Promise<void> => {
-    return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        if (!isProcessingHasStopped.current) {
-          resolve()
-          return
-        }
-
-        item.click()
-        item.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center',
-          inline: 'nearest',
-        })
-
-        setTimeout(() => {
-          if (!isProcessingHasStopped.current) {
-            resolve()
-            return
-          }
-
-          const inputMarkGroup = document.querySelector(
-            '.mark-group__input-container input.mark-group__input'
-          ) as HTMLInputElement
-
-          if (minRating && maxRating) {
-            inputMarkGroup.value = String(getRandomInt(minRating, maxRating))
-          }
-
-          if (remove) {
-            inputMarkGroup.value = ''
-          }
-
-          inputMarkGroup.dispatchEvent(new Event('input', { bubbles: true }))
-
-          setTimeout(() => {
-            if (!isProcessingHasStopped.current) {
-              resolve()
-              return
-            }
-
-            const approve = document.querySelector(
-              '.mark-group .mark-buttons button .clickable'
-            ) as HTMLElement
-
-            if (approve) {
-              approve.click()
-            }
-
-            resolve()
-          }, 300)
-        }, 300)
-      }, 1000)
-    })
+    setCurrentPercent(fillPercent())
   }
 
   const handleClose = () => window.location.reload()
@@ -306,21 +113,9 @@ function App() {
       const emptyCells: HTMLElement[] = []
 
       if (selectedStudents) {
-        const items = [
-          ...document.querySelectorAll(
-            '.gradebook-container__table2-outlet .gradebook-container__table2-row'
-          ),
-        ]
-
-        for (const item of items) {
-          if (
-            selectedStudents.find(
-              (student) =>
-                student.value ===
-                (item.querySelector('.bem-user__name') as HTMLElement).innerText.trim()
-            )
-          ) {
-            for (const cell of [...item.querySelectorAll('.gradebook-narrow__cell.smart-cell')]) {
+        for (const row of rows) {
+          if (selectedStudents.find((student) => student.value === studentName(row))) {
+            for (const cell of [...row.querySelectorAll('.gradebook-narrow__cell.smart-cell')]) {
               if (
                 cell.querySelector('.gradebook__ng-universal-rating-comments') &&
                 !cell.querySelector('.pseudo-button--color-red') &&
@@ -332,13 +127,7 @@ function App() {
           }
         }
       } else {
-        const items = [
-          ...document.querySelectorAll(
-            '.gradebook-container__table .gradebook-container__table2-row .gradebook-narrow__cell.smart-cell'
-          ),
-        ]
-
-        for (const cell of items) {
+        for (const cell of cells) {
           if (
             cell.querySelector('.gradebook__ng-universal-rating-comments') &&
             !cell.querySelector('.pseudo-button--color-red') &&
@@ -349,8 +138,6 @@ function App() {
         }
       }
 
-      setCurrentPercent(getFillInPercent(selectedStudents))
-
       for (const cell of shuffleArray(emptyCells)) {
         await processItem({
           item: cell,
@@ -358,11 +145,11 @@ function App() {
           maxRating,
         })
 
-        const percent = getFillInPercent(selectedStudents)
+        const percent = fillPercent(selectedStudents)
 
         setCurrentPercent(percent)
 
-        if (!isProcessingHasStopped.current) {
+        if (!isProcessingRef.current) {
           setToast('stop')
           handleReset()
           return
@@ -384,21 +171,9 @@ function App() {
       const cells: HTMLElement[] = []
 
       if (selectedStudents) {
-        const items = [
-          ...document.querySelectorAll(
-            '.gradebook-container__table2-outlet .gradebook-container__table2-row'
-          ),
-        ]
-
-        for (const item of items) {
-          if (
-            selectedStudents.find(
-              (student) =>
-                student.value ===
-                (item.querySelector('.bem-user__name') as HTMLElement).innerText.trim()
-            )
-          ) {
-            for (const cell of [...item.querySelectorAll('.gradebook-narrow__cell.smart-cell')]) {
+        for (const row of rows) {
+          if (selectedStudents.find((student) => student.value === studentName(row))) {
+            for (const cell of [...row.querySelectorAll('.gradebook-narrow__cell.smart-cell')]) {
               if (removeAllRating) {
                 if (
                   cell.querySelector('.gradebook__ng-universal-rating-comments') &&
@@ -425,14 +200,8 @@ function App() {
           }
         }
       } else {
-        const items = [
-          ...document.querySelectorAll(
-            '.gradebook-container__table .gradebook-container__table2-row .gradebook-narrow__cell.smart-cell'
-          ),
-        ]
-
-        for (const item of items) {
-          for (const cell of [...item.querySelectorAll('.gradebook-narrow__cell.smart-cell')]) {
+        for (const itemCell of cells) {
+          for (const cell of [...itemCell.querySelectorAll('.gradebook-narrow__cell.smart-cell')]) {
             if (removeAllRating) {
               if (
                 cell.querySelector('.gradebook__ng-universal-rating-comments') &&
@@ -457,7 +226,7 @@ function App() {
         }
       }
 
-      setCurrentPercent(100 - getFillInPercent(selectedStudents))
+      setCurrentPercent(100 - fillPercent(selectedStudents))
 
       for (const cell of cells) {
         await processItem({
@@ -465,9 +234,9 @@ function App() {
           remove: true,
         })
 
-        setCurrentPercent(100 - getFillInPercent(selectedStudents))
+        setCurrentPercent(100 - fillPercent(selectedStudents))
 
-        if (!isProcessingHasStopped.current) {
+        if (!isProcessingRef.current) {
           handleReset()
           setToast('stop')
           return
@@ -478,7 +247,7 @@ function App() {
       beep()
     }
 
-    if (isRatingCount) {
+    if (isCountRating) {
       setIsSubmitting(true)
       setIsProcessing(true)
       setRunRatingCount(true)
@@ -489,19 +258,10 @@ function App() {
     handleReset()
   }
 
-  const handleSelectedStudent = (selectedOption: MultiValue<unknown>) => {
-    const students = selectedOption as unknown as Student[]
-
-    setSelectedStudents(students)
-
-    if (students) {
-      setCurrentPercent(getFillInPercent(students))
-      setPercentError('')
-    } else {
-      setCurrentPercent(getFillInPercent())
-      setPercentError('')
-    }
-  }
+  const handleSelectedStudent = useCallback((selectedOption: MultiValue<unknown>) => {
+    setSelectedStudents(selectedOption as unknown as Student[])
+    setPercentError('')
+  }, [])
 
   if (isRunRatingCount) {
     return (
@@ -613,10 +373,8 @@ function App() {
                 <Form.Check
                   type="switch"
                   label="Показати яких і скільки оцінок"
-                  onChange={(e) =>
-                    e.target.checked ? setAction('show_rating_count') : setAction('')
-                  }
-                  checked={isRatingCount}
+                  onChange={(e) => (e.target.checked ? setAction('count_rating') : setAction(''))}
+                  checked={isCountRating}
                   disabled={isSubmitting}
                 />
               </Card.Body>
@@ -644,7 +402,7 @@ function App() {
                     <Select
                       className="mb-2"
                       placeholder="Оберіть учнів"
-                      options={getStudentsList()}
+                      options={studentsList}
                       onChange={(options) => handleSelectedStudent(options)}
                       isMulti
                       closeMenuOnSelect={false}
@@ -763,7 +521,7 @@ function App() {
                     <Select
                       className="mb-2"
                       placeholder="Оберіть учнів"
-                      options={getStudentsList()}
+                      options={studentsList}
                       onChange={(options) => handleSelectedStudent(options)}
                       isMulti
                       closeMenuOnSelect={false}
@@ -825,7 +583,7 @@ function App() {
               </>
             )}
 
-            {isRatingCount && (
+            {isCountRating && (
               <>
                 <Description>
                   <p>
@@ -864,7 +622,7 @@ function App() {
             <Button variant="danger" onClick={handleClose}>
               Закрити
             </Button>
-            <Button variant="primary" type="submit">
+            <Button disabled={action === ''} variant="primary" type="submit">
               Почати
             </Button>
           </Modal.Footer>
