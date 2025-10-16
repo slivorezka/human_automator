@@ -16,7 +16,11 @@ chrome.action.onClicked.addListener(async (tab: chrome.tabs.Tab) => {
   await chrome.scripting.executeScript({
     target: { tabId: tab.id },
     func: () => {
-      window.dispatchEvent(new CustomEvent('runHumanAutomator'))
+      if (document.getElementById('human-automator')) {
+        window.dispatchEvent(new CustomEvent('destroyHumanAutomator'))
+      } else {
+        window.dispatchEvent(new CustomEvent('runHumanAutomator'))
+      }
     },
   })
 })

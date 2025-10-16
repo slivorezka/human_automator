@@ -1,14 +1,27 @@
 import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
+import { createRoot, type Root } from 'react-dom/client'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 import App from './App.tsx'
 import './scss/style.scss'
 
-const app = document.createElement('div')
-app.id = 'human-automator'
-document.body.append(app)
-createRoot(app).render(
-  <StrictMode>
-    <App />
-  </StrictMode>
-)
+let rootHumanAutomator: Root | null
+
+window.addEventListener('runHumanAutomator', () => {
+  const app = document.createElement('div')
+  app.id = 'human-automator'
+  document.body.append(app)
+
+  rootHumanAutomator = createRoot(app)
+  rootHumanAutomator.render(
+    <StrictMode>
+      <App />
+    </StrictMode>
+  )
+})
+
+window.addEventListener('destroyHumanAutomator', () => {
+  rootHumanAutomator?.unmount()
+  rootHumanAutomator = null
+
+  document.getElementById('human-automator')?.remove()
+})

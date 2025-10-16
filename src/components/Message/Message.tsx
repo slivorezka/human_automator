@@ -1,19 +1,22 @@
 import type { ReactNode } from 'react'
 import { Toast, ToastContainer } from 'react-bootstrap'
 import { Bot } from 'lucide-react'
+import type { ToastType } from '../../types'
 
 function Message({
   children,
   show,
+  type,
   onClose,
 }: {
   children?: ReactNode
   show: boolean
+  type: ToastType
   onClose: () => void
 }) {
   return (
     <ToastContainer position="top-end" className="p-3">
-      <Toast onClose={onClose} show={show} delay={10000} autohide bg="danger">
+      <Toast onClose={onClose} show={show} delay={3000} autohide bg={type}>
         <Toast.Header className="text-white justify-content-center" closeButton>
           <strong className="d-flex align-items-center gap-1">
             <Bot /> Human Automator
