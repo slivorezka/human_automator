@@ -5,7 +5,7 @@ chrome.runtime.onInstalled.addListener(() => {
       css: ['style.css'],
       js: ['index.js'],
       matches: ['*://*.human.ua/*'],
-      runAt: 'document_idle',
+      runAt: 'document_end',
     },
   ])
 })

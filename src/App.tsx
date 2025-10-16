@@ -9,6 +9,7 @@ import Description from './components/Description'
 import Header from './components/Header'
 import useGradeBook from './hooks/useGradeBook'
 import useAction from './hooks/useAction'
+import useStudents from './hooks/useStudents'
 import useProcessing from './hooks/useProcessing'
 import { shuffleArray, beep } from './utils/gradebook'
 import type { Student, ToastType } from './types'
@@ -18,8 +19,15 @@ import Message from './components/Message'
 function App() {
   const animatedComponents = makeAnimated()
 
-  const { action, setAction, isSetRating, isDeleteRating, isCountRating } = useAction()
-  const { isProcessing, setIsProcessing, processItem, isProcessingRef } = useProcessing()
+  const {
+    studentListType,
+    setStudentListType,
+    isStudentTypeList,
+    isStudentTypeCustom,
+    isStudentTypeAll,
+    selectedStudents,
+    setSelectedStudents,
+  } = useStudents()
   const {
     rows,
     cells,
@@ -34,13 +42,11 @@ function App() {
     cellRemoveSelected,
   } = useGradeBook()
 
+  const { action, setAction, isSetRating, isDeleteRating, isCountRating } = useAction()
+  const { isProcessing, setIsProcessing, processItem, isProcessingRef } = useProcessing()
   const studentsList = useMemo(() => students(), [students])
 
   const [isRunCountRating, setCountRating] = useState<boolean>(false)
-  const [selectedStudents, setSelectedStudents] = useState<Student[] | undefined>(undefined)
-  // const [isExcludedStudents, setIsExcludedSubmitting] = useState<boolean>(false)
-  const [isListStudents, setIsListStudents] = useState<boolean>(false)
-  const [isCustomStudents, setIsCustomStudents] = useState<boolean>(false)
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
   const [minRating, setMinRating] = useState<number>(0)
   const [maxRating, setMaxRating] = useState<number>(0)
@@ -52,6 +58,9 @@ function App() {
   const [currentPercent, setCurrentPercent] = useState<number>(0)
   const [isToast, setToast] = useState<ToastType>('')
   const [showModal, setShowModal] = useState<boolean>(true)
+
+  console.info(studentListType)
+  console.info(selectedStudents)
 
   useEffect(() => {
     setCurrentPercent(fillPercent(selectedStudents))
@@ -243,10 +252,13 @@ function App() {
     }
   }
 
-  const handleSelectedStudent = useCallback((selectedOption: MultiValue<unknown>) => {
-    setSelectedStudents(selectedOption as unknown as Student[])
-    setPercentError('')
-  }, [])
+  const handleSelectedStudent = useCallback(
+    (selectedOption: MultiValue<unknown>) => {
+      setSelectedStudents(selectedOption as unknown as Student[])
+      setPercentError('')
+    },
+    [setSelectedStudents]
+  )
 
   if (isToast) {
     return (
@@ -377,51 +389,85 @@ function App() {
                 <Card.Body>
                   <Form.Check
                     type="switch"
+                    label="Обрати всіх учнів"
+                    onChange={(e) =>
+                      e.target.checked ? setStudentListType('all') : setStudentListType('all')
+                    }
+                    checked={isStudentTypeAll}
+                    disabled={isSubmitting}
+                  />
+                  <Form.Check
+                    type="switch"
                     label="Використати список учнів"
-                    onChange={(e) => {
-                      setIsListStudents(e.target.checked)
-                      setIsCustomStudents(!e.target.checked)
-                    }}
-                    checked={isListStudents}
+                    onChange={(e) =>
+                      e.target.checked ? setStudentListType('list') : setStudentListType('all')
+                    }
+                    checked={isStudentTypeList}
                     disabled={isSubmitting}
                   />
                   <Form.Check
                     type="switch"
                     label="Обрати учнів зі списку"
-                    onChange={(e) => {
-                      setIsCustomStudents(e.target.checked)
-                      setIsListStudents(!e.target.checked)
-                    }}
-                    checked={isCustomStudents}
+                    onChange={(e) =>
+                      e.target.checked ? setStudentListType('custom') : setStudentListType('all')
+                    }
+                    checked={isStudentTypeCustom}
                     disabled={isSubmitting}
                   />
                   <Form.Text>
-                    <p>
-                      <span className="fw-bold">Оберіть список учнів</span> яким бажаєте виставити
-                      оцінки, або <span className="fw-bold">оберіть окремих учнів</span>, щоб
-                      виставити їм оцінки
-                    </p>
-                    <p>
-                      Якщо <span className="fw-bold">НЕ</span> буде обрано жодного учня то, оцінки
-                      буде виставлено <span className="fw-bold">усім учням</span>
-                    </p>
-                  </Form.Text>
-                  <Form.Label className="fw-bold">Оберіть учнів</Form.Label>
-                  <Select
-                    className="mb-2"
-                    placeholder="Оберіть учнів"
-                    options={studentsList}
-                    onChange={(options) => handleSelectedStudent(options)}
-                    isMulti
-                    closeMenuOnSelect={false}
-                    components={animatedComponents}
-                    isDisabled={isSubmitting}
-                  />
-                  <Form.Text>
-                    <span className="fw-bold">Оберіть учнів</span> яким бажаєте виставити оцінки
+                    <ul className="mt-3 mb-0">
+                      <li>
+                        <span className="fw-bold">Обрати всіх учнів</span> — дозволяє виставити
+                        оцінки
+                        <span className="fw-bold"> усім учням</span>
+                      </li>
+                      <li>
+                        <span className="fw-bold">Використати список учнів</span> — дозволяє
+                        виставити оцінки учням з обраного списку
+                      </li>
+                      <li>
+                        <span className="fw-bold">Обрати учнів зі списку</span> — дозволяє виставити
+                        оцінки <span className="fw-bold">окремим обраним учням</span>
+                      </li>
+                    </ul>
                   </Form.Text>
                 </Card.Body>
               </Card>
+
+              {isStudentTypeList && (
+                <Card className="mt-3">
+                  <Card.Body>
+                    <Form.Label className="fw-bold">Оберіть список учнів</Form.Label>
+                    <h1>List</h1>
+                    <Form.Text>
+                      <span className="fw-bold">Оберіть учнів</span>, яким бажаєте виставити оцінки
+                    </Form.Text>
+                  </Card.Body>
+                </Card>
+              )}
+
+              {isStudentTypeCustom && (
+                <Card className="mt-3">
+                  <Card.Body>
+                    <Form.Label className="fw-bold">Оберіть учнів</Form.Label>
+                    <Select
+                      className="mb-2"
+                      placeholder="Оберіть учнів"
+                      options={studentsList}
+                      onChange={(options) => handleSelectedStudent(options)}
+                      isMulti
+                      required
+                      closeMenuOnSelect={false}
+                      components={animatedComponents}
+                      isDisabled={isSubmitting}
+                    />
+                    <Form.Text>
+                      <span className="fw-bold">Оберіть учнів</span> яким бажаєте виставити оцінки
+                    </Form.Text>
+                  </Card.Body>
+                </Card>
+              )}
+
               <Card className="mt-3">
                 <Card.Body>
                   <Form.Group>

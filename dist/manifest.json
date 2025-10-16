@@ -14,7 +14,7 @@
     "128": "icons/16.png"
   },
   "background": {
-    "service_worker": "background-CHreIMDh.js",
+    "service_worker": "background-BuSn0Xsz.js",
     "type": "module"
   },
   "permissions": [
