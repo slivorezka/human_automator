@@ -79,7 +79,6 @@ function App() {
 
   const handleReset = useCallback(() => {
     setAction('')
-    setCountRating(false)
     setSelectedStudents(undefined)
     setIsSubmitting(false)
     setIsProcessing(false)
@@ -268,7 +267,14 @@ function App() {
   if (isRunCountRating) {
     return (
       <>
-        <Modal show={showModal} onHide={handleClose} centered>
+        <Modal
+          show={showModal}
+          onHide={() => {
+            handleClose()
+            setCountRating(false)
+          }}
+          centered
+        >
           <Header />
           <Modal.Body>
             <Card>
@@ -278,7 +284,13 @@ function App() {
             </Card>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="danger" onClick={handleClose}>
+            <Button
+              variant="danger"
+              onClick={() => {
+                handleClose()
+                setCountRating(false)
+              }}
+            >
               Закрити
             </Button>
           </Modal.Footer>
