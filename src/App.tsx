@@ -48,6 +48,7 @@ function App() {
   const [maxPercent, setMaxPercent] = useState<number>(0)
   const [currentPercent, setCurrentPercent] = useState<number>(0)
   const [isToast, setToast] = useState<'' | 'stop' | 'done'>('')
+  const [showModal, setShowModal] = useState<boolean>(false)
 
   useEffect(() => {
     setCurrentPercent(fillPercent(selectedStudents))
@@ -76,8 +77,9 @@ function App() {
     }
   }, [action, setAction])
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     setAction('')
+    setCountRating(false)
     setSelectedStudents(undefined)
     setIsSubmitting(false)
     setIsProcessing(false)
@@ -89,9 +91,22 @@ function App() {
     setCurrentPercent(fillPercent())
     toolPanel(false)
     cellRemoveSelected(false)
-  }
+  }, [cellRemoveSelected, fillPercent, setAction, setIsProcessing, toolPanel])
 
-  const handleClose = () => window.location.reload()
+  const handleOpenModal = useCallback(() => {
+    setShowModal((prev) => !prev)
+    handleReset()
+  }, [handleReset])
+
+  useEffect(() => {
+    window.addEventListener('runHumanAutomator', handleOpenModal)
+
+    return () => {
+      window.removeEventListener('runHumanAutomator', handleOpenModal)
+    }
+  }, [handleOpenModal])
+
+  const handleClose = () => handleOpenModal()
 
   const handleStopProcessing = () => {
     setIsSubmitting(false)
@@ -253,7 +268,7 @@ function App() {
   if (isRunCountRating) {
     return (
       <>
-        <Modal show onHide={handleClose} centered>
+        <Modal show={showModal} onHide={handleClose} centered>
           <Header />
           <Modal.Body>
             <Card>
@@ -274,7 +289,7 @@ function App() {
 
   return isProcessing ? (
     <>
-      <Modal show onHide={handleClose} centered>
+      <Modal show={showModal} onHide={handleClose} centered>
         <Header />
         <Modal.Body>
           <ProgressBar
@@ -328,7 +343,7 @@ function App() {
         </Message>
       )}
 
-      <Modal show={true} onHide={handleClose} centered>
+      <Modal show={showModal} onHide={handleClose} centered>
         <Form onSubmit={handleSubmit}>
           <Header />
           <Modal.Body>
