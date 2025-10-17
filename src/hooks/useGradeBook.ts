@@ -13,6 +13,10 @@ const useGradeBook = () => {
     ) as unknown as HTMLElement[]),
   ]
 
+  const className: string = (
+    document.querySelector('.group-switcher-title.label') as HTMLElement
+  )?.innerText.trim()
+
   const cellRating = (cell: HTMLElement): HTMLElement | null => {
     return cell.querySelector('.badge__item--no-border')
   }
@@ -140,6 +144,7 @@ const useGradeBook = () => {
     cells,
     cellsNarrow,
     cellAbsent,
+    className,
     rating,
     ratingComment,
     studentName,

@@ -121,12 +121,15 @@ export default defineConfig({
     emptyOutDir: true,
     outDir: 'dist',
     minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-      },
-    },
+    terserOptions:
+      process.env.DEV !== 'true'
+        ? {
+            compress: {
+              drop_console: true,
+              drop_debugger: true,
+            },
+          }
+        : undefined,
     rollupOptions: {
       input: {
         background: resolve(__dirname, 'src/background.ts'),

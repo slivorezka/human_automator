@@ -15,18 +15,19 @@ import { shuffleArray, beep } from './utils/gradebook'
 import type { Student, ToastType } from './types'
 import { EXAMPLE_RATING, MAX_RATING, MIN_RATING, TIMING } from './constants/config.ts'
 import Message from './components/Message'
+import StudentLists from './components/StudentLists'
 
 function App() {
   const animatedComponents = makeAnimated()
 
   const {
-    studentListType,
     setStudentListType,
     isStudentTypeList,
     isStudentTypeCustom,
     isStudentTypeAll,
     selectedStudents,
     setSelectedStudents,
+    listsStudent,
   } = useStudents()
   const {
     rows,
@@ -58,9 +59,7 @@ function App() {
   const [currentPercent, setCurrentPercent] = useState<number>(0)
   const [isToast, setToast] = useState<ToastType>('')
   const [showModal, setShowModal] = useState<boolean>(true)
-
-  console.info(studentListType)
-  console.info(selectedStudents)
+  const [showStudentLists, setShowStudentLists] = useState<boolean>(false)
 
   useEffect(() => {
     setCurrentPercent(fillPercent(selectedStudents))
@@ -260,6 +259,16 @@ function App() {
     [setSelectedStudents]
   )
 
+  if (showStudentLists) {
+    return (
+      <StudentLists
+        studentsList={studentsList}
+        selectedStudents={selectedStudents}
+        handleSelectedStudent={handleSelectedStudent}
+      />
+    )
+  }
+
   if (isToast) {
     return (
       <>
@@ -437,11 +446,32 @@ function App() {
               {isStudentTypeList && (
                 <Card className="mt-3">
                   <Card.Body>
-                    <Form.Label className="fw-bold">Оберіть список учнів</Form.Label>
-                    <h1>List</h1>
-                    <Form.Text>
-                      <span className="fw-bold">Оберіть учнів</span>, яким бажаєте виставити оцінки
-                    </Form.Text>
+                    {listsStudent?.length > 0 ? (
+                      <>
+                        <Form.Label className="fw-bold">Оберіть список учнів</Form.Label>
+                        <Form.Text>
+                          <span className="fw-bold">Оберіть список учнів</span>, яким бажаєте
+                          виставити оцінки
+                        </Form.Text>
+                      </>
+                    ) : (
+                      <div className="text-center">
+                        <p>
+                          Жодного <span className="fw-bold">списку учнів</span> ще не створено
+                        </p>
+                        <div>
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => {
+                              setShowStudentLists(true)
+                            }}
+                          >
+                            Створити список учнів
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </Card.Body>
                 </Card>
               )}
@@ -479,7 +509,7 @@ function App() {
                         max={MAX_RATING}
                         placeholder="Введіть мінімальну оцінку"
                         required
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || (isStudentTypeList && listsStudent.length === 0)}
                         isInvalid={!!error}
                         onChange={(e) => {
                           setMinRating(Number(e.target.value))
@@ -506,7 +536,7 @@ function App() {
                         max={MAX_RATING}
                         placeholder="Введіть максимальну оцінку"
                         required
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || (isStudentTypeList && listsStudent.length === 0)}
                         isInvalid={!!error}
                         onChange={(e) => {
                           setMaxRating(Number(e.target.value))
@@ -534,7 +564,7 @@ function App() {
                         placeholder="Введіть максимальний відсоток заповнення"
                         required
                         key={currentPercent}
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || (isStudentTypeList && listsStudent.length === 0)}
                         isInvalid={!!percentError}
                         defaultValue={currentPercent}
                         onChange={(e) => {
@@ -675,7 +705,13 @@ function App() {
           <Button variant="danger" onClick={handleClose}>
             Закрити
           </Button>
-          <Button disabled={action === ''} variant="primary" type="submit">
+          <Button
+            disabled={
+              action === '' || isSubmitting || (isStudentTypeList && listsStudent.length === 0)
+            }
+            variant="primary"
+            type="submit"
+          >
             Почати
           </Button>
         </Modal.Footer>
