@@ -4,6 +4,7 @@ export interface Student {
 }
 
 export interface StudentList {
+  id: string
   className: string
   name: string
   students: Student[]

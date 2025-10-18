@@ -15,7 +15,8 @@ import { shuffleArray, beep } from './utils/gradebook'
 import type { Student, ToastType } from './types'
 import { EXAMPLE_RATING, MAX_RATING, MIN_RATING, TIMING } from './constants/config.ts'
 import Message from './components/Message'
-import StudentLists from './components/StudentLists'
+import useStudentLists from './hooks/useStudentLists'
+import StudentListAdd from './components/StudentLists/StudentListAdd'
 
 function App() {
   const animatedComponents = makeAnimated()
@@ -29,6 +30,10 @@ function App() {
     setSelectedStudents,
     listsStudent,
   } = useStudents()
+
+  const { studentLists, setStudentLists, showModalStudentListAdd, setShowModalStudentListAdd } =
+    useStudentLists()
+
   const {
     rows,
     cells,
@@ -59,7 +64,6 @@ function App() {
   const [currentPercent, setCurrentPercent] = useState<number>(0)
   const [isToast, setToast] = useState<ToastType>('')
   const [showModal, setShowModal] = useState<boolean>(true)
-  const [showStudentLists, setShowStudentLists] = useState<boolean>(false)
 
   useEffect(() => {
     setCurrentPercent(fillPercent(selectedStudents))
@@ -259,12 +263,18 @@ function App() {
     [setSelectedStudents]
   )
 
-  if (showStudentLists) {
+  if (showModalStudentListAdd) {
     return (
-      <StudentLists
-        studentsList={studentsList}
-        selectedStudents={selectedStudents}
-        handleSelectedStudent={handleSelectedStudent}
+      <StudentListAdd
+        props={{
+          studentsList,
+          selectedStudents,
+          handleSelectedStudent,
+          studentLists,
+          setStudentLists,
+          showModalStudentListAdd,
+          setShowModalStudentListAdd,
+        }}
       />
     )
   }
@@ -446,7 +456,7 @@ function App() {
               {isStudentTypeList && (
                 <Card className="mt-3">
                   <Card.Body>
-                    {listsStudent?.length > 0 ? (
+                    {studentLists?.length > 0 ? (
                       <>
                         <Form.Label className="fw-bold">Оберіть список учнів</Form.Label>
                         <Form.Text>
@@ -464,7 +474,7 @@ function App() {
                             variant="primary"
                             size="sm"
                             onClick={() => {
-                              setShowStudentLists(true)
+                              setShowModalStudentListAdd(true)
                             }}
                           >
                             Створити список учнів

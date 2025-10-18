@@ -1,6 +1,6 @@
-import { Button, Card, Form, Modal } from 'react-bootstrap'
+import { Button, Card, Form, InputGroup, Modal } from 'react-bootstrap'
 import type { Student, StudentList } from '../../types'
-import useGradeBook from '../../hooks/useGradeBook.ts'
+import useGradeBook from '../../hooks/useGradeBook'
 import Select, { type MultiValue } from 'react-select'
 import { type FormEvent, useState } from 'react'
 import makeAnimated from 'react-select/animated'
@@ -12,8 +12,6 @@ function StudentListAdd({
     handleSelectedStudent,
     studentLists,
     setStudentLists,
-    activeStudentList,
-    setActiveStudentList,
     showModalStudentListAdd,
     setShowModalStudentListAdd,
   },
@@ -24,79 +22,46 @@ function StudentListAdd({
     handleSelectedStudent: (selectedOption: MultiValue<unknown>) => void
     studentLists: StudentList[]
     setStudentLists: (studentList: StudentList[]) => void
-    activeStudentList: string
-    setActiveStudentList: (name: string) => void
     showModalStudentListAdd: boolean
     setShowModalStudentListAdd: (status: boolean) => void
   }
 }) {
   const animatedComponents = makeAnimated()
   const { className } = useGradeBook()
+
   const [error, setError] = useState<string>('')
+  const [name, setName] = useState<string>('')
 
   const handleClose = () => {
-    setActiveStudentList('')
     setShowModalStudentListAdd(false)
   }
-
-  const savedStudents =
-    studentLists.find((list) => list.name === activeStudentList && list.className === className)
-      ?.students || []
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    if (
-      studentLists.find((list) => list.name === activeStudentList && list.className === className)
-    ) {
+    if (studentLists.find((list) => list.name === name)) {
       setError('Список з такою назвою вже існує')
       return
     }
 
-    console.info(activeStudentList)
-    console.info(studentLists)
-    console.info(selectedStudents)
-
-    /*const updatedLists = studentLists.filter(
-      (list: StudentList) => !(list.name === activeStudentList && list.className === className)
-    )*/
-
     const updatedLists = [
       ...studentLists,
       {
+        name,
         className,
-        name: activeStudentList,
+        id: crypto.randomUUID(),
         students: selectedStudents || [],
       },
     ]
 
     await chrome.storage.local.set({
-      humanAutomator: { updatedLists },
+      humanAutomator: { studentLists: updatedLists },
     })
-
-    /*studentLists.push({
-      className,
-      name: activeStudentList,
-      students: selectedStudents || [],
-    })
-
-    await chrome.storage.local.set({
-      humanAutomator: {
-        studentLists,
-      },
-    })*/
 
     setStudentLists(updatedLists)
     setShowModalStudentListAdd(false)
 
-    /*await chrome.storage.local.set({
-      studentLists: [{ className: '11', name, students: selectedStudents || [] }],
-    })*/
-
-    //await chrome.storage.local.get('studentLists').then((res) => console.info(res.studentLists))
-
-    // Handle form submission logic here
-    // handleClose()
+    handleClose()
   }
 
   return (
@@ -109,17 +74,20 @@ function StudentListAdd({
           <Card>
             <Card.Body>
               <Form.Label className="fw-bold">Назву списку</Form.Label>
-              <Form.Control
-                type="input"
-                value={activeStudentList}
-                isInvalid={!!error}
-                placeholder="Введіть назву списку"
-                onChange={(e) => {
-                  setActiveStudentList(e.target.value)
-                  setError('')
-                }}
-                required
-              />
+              <InputGroup className="mb-2">
+                <Form.Control
+                  type="input"
+                  value={name}
+                  isInvalid={!!error}
+                  placeholder="Введіть назву списку"
+                  onChange={(e) => {
+                    setName(e.target.value)
+                    setError('')
+                  }}
+                  required
+                />
+                <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
+              </InputGroup>
               <Form.Text>
                 <span className="fw-bold">Оберіть назву</span> для цього списку, наприклад,
                 <span className="fw-bold"> Відмінники</span>
@@ -132,7 +100,7 @@ function StudentListAdd({
               <Select
                 className="mb-2"
                 placeholder="Оберіть учнів"
-                defaultValue={savedStudents}
+                defaultValue={selectedStudents}
                 options={studentsList}
                 onChange={(options) => handleSelectedStudent(options)}
                 isMulti

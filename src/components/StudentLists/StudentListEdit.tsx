@@ -11,7 +11,7 @@ function StudentListEdit({
     selectedStudents,
     handleSelectedStudent,
     studentLists,
-    setStudentLists,
+    //setStudentLists,
     activeStudentList,
     setActiveStudentList,
     showModalStudentListEdit,
@@ -32,8 +32,10 @@ function StudentListEdit({
 }) {
   const animatedComponents = makeAnimated()
   const { className } = useGradeBook()
+  const studentList = studentLists.find((list) => list.id === activeStudentList)
+
   const [error, setError] = useState<string>('')
-  const [newStudentListName, setNewStudentListName] = useState<string>(activeStudentList)
+  const [name, setName] = useState<string>(studentList?.name || '')
 
   const handleClose = () => {
     setActiveStudentList('')
@@ -43,53 +45,34 @@ function StudentListEdit({
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    const studentList = studentLists.find((list) => list.name === activeStudentList)
-
-    if (!studentList) return
-
-    if (studentList.name === newStudentListName) {
+    if (
+      studentLists.find((list) => list.name === activeStudentList && list.id !== activeStudentList)
+    ) {
       setError('Список з такою назвою вже існує')
       return
     }
 
-    const studentListsAll = studentLists.filter(
-      (list: StudentList) => !(list.name === activeStudentList)
-    )
-
-    let updatedStudentLists: StudentList[]
-
-    if (studentListsAll) {
-      updatedStudentLists = [
-        ...studentListsAll,
-        {
-          ...studentList,
-          students: selectedStudents ?? [],
-          name: newStudentListName,
-        },
-      ]
-    } else {
-      updatedStudentLists = [
-        {
-          ...studentList,
-          students: selectedStudents ?? [],
-          name: newStudentListName,
-        },
-      ]
-    }
-
-    await chrome.storage.local.set({
-      humanAutomator: {
-        studentLists: updatedStudentLists,
+    const updatedLists = [
+      ...(studentLists.filter((list: StudentList) => !(list.id === activeStudentList)) || {}),
+      {
+        name,
+        students: selectedStudents || [],
       },
-    })
+    ]
 
-    setActiveStudentList('')
-    setStudentLists(updatedStudentLists)
-    setShowModalStudentListEdit(false)
+    /*await chrome.storage.local.set({
+      humanAutomator: { updatedLists },
+    })*/
+
+    /*console.info(activeStudentList)
+    console.info(selectedStudents)
+    console.info(studentLists)*/
+    console.info(updatedLists)
+
+    /*setActiveStudentList('')
+    setStudentLists(updatedLists)
+    setShowModalStudentListEdit(false)*/
   }
-
-  const selectedStudentsOfClass =
-    studentLists.find((list) => list.name === activeStudentList)?.students || []
 
   return (
     <Modal show={showModalStudentListEdit} onHide={handleClose} animation centered>
@@ -104,11 +87,11 @@ function StudentListEdit({
               <InputGroup className="mb-2">
                 <Form.Control
                   type="input"
-                  value={newStudentListName}
+                  value={name}
                   isInvalid={!!error}
                   placeholder="Введіть назву списку"
                   onChange={(e) => {
-                    setNewStudentListName(e.target.value)
+                    setName(e.target.value)
                     setError('')
                   }}
                   required
@@ -127,7 +110,7 @@ function StudentListEdit({
               <Select
                 className="mb-2"
                 placeholder="Оберіть учнів"
-                defaultValue={selectedStudentsOfClass}
+                defaultValue={selectedStudents || []}
                 options={studentsList}
                 onChange={(options) => handleSelectedStudent(options)}
                 isMulti

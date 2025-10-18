@@ -36,13 +36,13 @@ function StudentLists({
 
   const handleModalStudentListClose = () => setShowModalStudentList(false)
 
-  const handleRemove = (name: string) => {
-    setActiveStudentList(name)
+  const handleRemove = (id: string) => {
+    setActiveStudentList(id)
     setShowModalStudentListRemove(true)
   }
 
-  const handleEdit = (name: string) => {
-    setActiveStudentList(name)
+  const handleEdit = (id: string) => {
+    setActiveStudentList(id)
     setShowModalStudentListEdit(true)
   }
 
@@ -62,8 +62,6 @@ function StudentLists({
           handleSelectedStudent,
           studentLists,
           setStudentLists,
-          activeStudentList,
-          setActiveStudentList,
           showModalStudentListAdd,
           setShowModalStudentListAdd,
         }}
@@ -125,7 +123,7 @@ function StudentLists({
                         className="pt-0"
                         size="sm"
                         variant="outline-primary"
-                        onClick={() => handleEdit(studentList.name)}
+                        onClick={() => handleEdit(studentList.id)}
                       >
                         <Pencil size={12} />
                       </Button>
@@ -133,7 +131,7 @@ function StudentLists({
                         className="pt-0"
                         size="sm"
                         variant="outline-danger"
-                        onClick={() => handleRemove(studentList.name)}
+                        onClick={() => handleRemove(studentList.id)}
                       >
                         <Trash size={12} />
                       </Button>
