@@ -61,6 +61,17 @@
   }
 }
 
+.modal-open {
+  .modal-backdrop {
+    opacity: .5 !important;
+
+    &.show {
+      opacity: 0;
+    }
+  }
+}
+
+
 .input-group:not(.has-validation) > .dropdown-toggle:nth-last-child(n+3),
 .input-group:not(.has-validation) > .form-floating:not(:last-child) > .form-control,
 .input-group:not(.has-validation) > .form-floating:not(:last-child) > .form-select,

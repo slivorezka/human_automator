@@ -17,7 +17,8 @@ import { EXAMPLE_RATING, MAX_RATING, MIN_RATING, TIMING } from './constants/conf
 import Message from './components/Message'
 import useStudentLists from './hooks/useStudentLists'
 import StudentListAdd from './components/StudentLists/StudentListAdd'
-import { Plus, Pencil } from 'lucide-react'
+import StudentLists from './components/StudentLists/StudentLists'
+import { Plus, Pencil, X, Play } from 'lucide-react'
 
 function App() {
   const animatedComponents = makeAnimated()
@@ -32,9 +33,13 @@ function App() {
   } = useStudents()
 
   const {
+    activeStudentList,
+    setActiveStudentList,
     studentLists,
     setStudentLists,
     setSelectedStudentList,
+    showModalStudentLists,
+    setShowModalStudentLists,
     showModalStudentListAdd,
     setShowModalStudentListAdd,
   } = useStudentLists()
@@ -276,6 +281,23 @@ function App() {
     [setSelectedStudentList]
   )
 
+  if (showModalStudentLists) {
+    return (
+      <StudentLists
+        props={{
+          activeStudentList,
+          setActiveStudentList,
+          showModalStudentLists,
+          setShowModalStudentLists,
+          studentsList,
+          selectedStudents,
+          setSelectedStudents,
+          handleSelectedStudent,
+        }}
+      />
+    )
+  }
+
   if (showModalStudentListAdd) {
     return (
       <StudentListAdd
@@ -323,7 +345,8 @@ function App() {
         </Modal.Body>
         <Modal.Footer>
           <Button variant="danger" onClick={handleClose}>
-            Закрити
+            <X width={16} height={16} />
+            <span className="align-middle ms-1">Закрити</span>
           </Button>
         </Modal.Footer>
       </Modal>
@@ -371,7 +394,7 @@ function App() {
       </Modal.Footer>
     </Modal>
   ) : (
-    <Modal show={showModal} onHide={handleClose} centered>
+    <Modal show={showModal} onHide={handleClose} centered animation>
       <Form onSubmit={handleSubmit}>
         <Header />
         <Modal.Body>
@@ -512,7 +535,7 @@ function App() {
                               variant="primary"
                               size="sm"
                               onClick={() => {
-                                setShowModalStudentListAdd(true)
+                                setShowModalStudentLists(true)
                               }}
                             >
                               <Pencil width={14} height={14} />
@@ -774,7 +797,8 @@ function App() {
         </Modal.Body>
         <Modal.Footer className="justify-content-between">
           <Button variant="danger" onClick={handleClose}>
-            Закрити
+            <X width={16} height={16} />
+            <span className="align-middle ms-1">Закрити</span>
           </Button>
           <Button
             disabled={
@@ -783,7 +807,8 @@ function App() {
             variant="primary"
             type="submit"
           >
-            Почати
+            <Play width={16} height={16} />
+            <span className="align-middle ms-1">Почати</span>
           </Button>
         </Modal.Footer>
       </Form>

@@ -1,33 +1,41 @@
-import { Table, Button, Card, Modal } from 'react-bootstrap'
-import { Pencil, Trash } from 'lucide-react'
+import { Table, Button, Modal } from 'react-bootstrap'
+import { Pencil, Trash2, X } from 'lucide-react'
 import useGradeBook from '../../hooks/useGradeBook'
 import useStudentLists from '../../hooks/useStudentLists'
 import StudentListRemove from './StudentListRemove'
 import StudentListEdit from './StudentListEdit'
-import type { Student } from '../../types'
+import type { Student, StudentList } from '../../types'
 import type { MultiValue } from 'react-select'
 import StudentListAdd from './StudentListAdd'
 import { useEffect } from 'react'
 
 function StudentLists({
-  studentsList,
-  selectedStudents,
-  setSelectedStudents,
-  handleSelectedStudent,
+  props: {
+    activeStudentList,
+    setActiveStudentList,
+    showModalStudentLists,
+    setShowModalStudentLists,
+    studentsList,
+    selectedStudents,
+    setSelectedStudents,
+    handleSelectedStudent,
+  },
 }: {
-  selectedStudents: Student[] | undefined
-  setSelectedStudents: (students: Student[]) => void
-  studentsList: Student[]
-  handleSelectedStudent: (selectedOption: MultiValue<unknown>) => void
+  props: {
+    activeStudentList: string
+    setActiveStudentList: (value: string) => void
+    showModalStudentLists: boolean
+    setShowModalStudentLists: (status: boolean) => void
+    selectedStudents: Student[] | undefined
+    setSelectedStudents: (students: Student[]) => void
+    studentsList: Student[]
+    handleSelectedStudent: (selectedOption: MultiValue<unknown>) => void
+  }
 }) {
   const { className } = useGradeBook()
   const {
     studentLists,
     setStudentLists,
-    activeStudentList,
-    showModalStudentList,
-    setActiveStudentList,
-    setShowModalStudentList,
     showModalStudentListAdd,
     setShowModalStudentListAdd,
     showModalStudentListEdit,
@@ -36,15 +44,15 @@ function StudentLists({
     setShowModalStudentListRemove,
   } = useStudentLists()
 
-  const handleModalStudentListClose = () => setShowModalStudentList(false)
+  const handleModalStudentListClose = () => setShowModalStudentLists(false)
 
-  const handleRemove = (id: string) => {
-    setActiveStudentList(id)
+  const handleRemove = (studentList: StudentList) => {
+    setActiveStudentList(studentList.id)
     setShowModalStudentListRemove(true)
   }
 
-  const handleEdit = (id: string) => {
-    setActiveStudentList(id)
+  const handleEdit = (studentList: StudentList) => {
+    setActiveStudentList(studentList.id)
     setShowModalStudentListEdit(true)
   }
 
@@ -72,6 +80,8 @@ function StudentLists({
     )
   }
 
+  console.info(activeStudentList)
+
   if (showModalStudentListEdit) {
     return (
       <StudentListEdit
@@ -90,8 +100,8 @@ function StudentLists({
     )
   }
 
-  return (
-    <>
+  if (showModalStudentListRemove) {
+    return (
       <StudentListRemove
         props={{
           studentLists,
@@ -102,31 +112,36 @@ function StudentLists({
           setShowModalStudentListRemove,
         }}
       />
-      <Modal show={showModalStudentList} onHide={handleModalStudentListClose} centered>
-        <Modal.Header className="justify-content-center" closeButton>
-          <Modal.Title as="h5">Списки учнів {className}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {studentLists ? (
-            <Table responsive striped bordered hover>
-              <thead className="text-center">
-                <tr>
-                  <th>Назва</th>
-                  <th>Кількість учнів</th>
-                  <th>Дія</th>
-                </tr>
-              </thead>
+    )
+  }
+
+  return (
+    <Modal show={showModalStudentLists} onHide={handleModalStudentListClose} centered animation>
+      <Modal.Header className="justify-content-center" closeButton>
+        <Modal.Title as="h5">Списки учнів {className}</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        {studentLists && (
+          <Table className="mb-0" responsive bordered hover>
+            <thead className="text-center">
+              <tr>
+                <th>Назва</th>
+                <th>Кількість учнів</th>
+                <th>Дія</th>
+              </tr>
+            </thead>
+            <tbody>
               {studentLists.map((studentList) => (
                 <tr>
                   <td className="fw-bold">{studentList.name}</td>
                   <td className="text-center fw-bold">{studentList.students.length}</td>
-                  <td>
+                  <td className="align-middle">
                     <div className="d-flex justify-content-center gap-2">
                       <Button
                         className="pt-0"
                         size="sm"
                         variant="outline-primary"
-                        onClick={() => handleEdit(studentList.id)}
+                        onClick={() => handleEdit(studentList)}
                       >
                         <Pencil size={12} />
                       </Button>
@@ -134,30 +149,25 @@ function StudentLists({
                         className="pt-0"
                         size="sm"
                         variant="outline-danger"
-                        onClick={() => handleRemove(studentList.id)}
+                        onClick={() => handleRemove(studentList)}
                       >
-                        <Trash size={12} />
+                        <Trash2 size={12} />
                       </Button>
                     </div>
                   </td>
                 </tr>
               ))}
-            </Table>
-          ) : (
-            <Card>
-              <Card.Body>
-                <p>Списки учнів відсутні</p>
-              </Card.Body>
-            </Card>
-          )}
-        </Modal.Body>
-        <Modal.Footer className="justify-content-end">
-          <Button variant="primary" onClick={handleModalStudentListClose}>
-            Закрити
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    </>
+            </tbody>
+          </Table>
+        )}
+      </Modal.Body>
+      <Modal.Footer className="justify-content-end">
+        <Button variant="danger" onClick={handleModalStudentListClose}>
+          <X width={16} height={16} />
+          <span className="align-middle ms-1">Закрити</span>
+        </Button>
+      </Modal.Footer>
+    </Modal>
   )
 }
 

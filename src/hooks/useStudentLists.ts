@@ -6,7 +6,7 @@ function useStudentLists() {
   const [selectedStudentList, setSelectedStudentList] = useState<StudentListOption[] | undefined>(
     undefined
   )
-  const [showModalStudentList, setShowModalStudentList] = useState<boolean>(true)
+  const [showModalStudentLists, setShowModalStudentLists] = useState<boolean>(false)
   const [showModalStudentListAdd, setShowModalStudentListAdd] = useState<boolean>(false)
   const [showModalStudentListEdit, setShowModalStudentListEdit] = useState<boolean>(false)
   const [showModalStudentListRemove, setShowModalStudentListRemove] = useState<boolean>(false)
@@ -25,8 +25,8 @@ function useStudentLists() {
     setStudentLists,
     selectedStudentList,
     setSelectedStudentList,
-    showModalStudentList,
-    setShowModalStudentList,
+    showModalStudentLists,
+    setShowModalStudentLists,
     showModalStudentListAdd,
     setShowModalStudentListAdd,
     showModalStudentListEdit,

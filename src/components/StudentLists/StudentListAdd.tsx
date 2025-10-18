@@ -4,6 +4,7 @@ import useGradeBook from '../../hooks/useGradeBook'
 import Select, { type MultiValue } from 'react-select'
 import { type FormEvent, useState } from 'react'
 import makeAnimated from 'react-select/animated'
+import { Check, X } from 'lucide-react'
 
 function StudentListAdd({
   props: {
@@ -119,10 +120,12 @@ function StudentListAdd({
         </Modal.Body>
         <Modal.Footer className="justify-content-between">
           <Button variant="primary" onClick={handleClose}>
-            Закрити
+            <X width={16} height={16} />
+            <span className="align-middle ms-1">Закрити</span>
           </Button>
           <Button variant="danger" type="submit">
-            Зберегти
+            <Check width={16} height={16} />
+            <span className="align-middle ms-1">Зберегти</span>
           </Button>
         </Modal.Footer>
       </Form>

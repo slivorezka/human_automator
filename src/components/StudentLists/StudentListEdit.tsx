@@ -1,9 +1,9 @@
 import { Button, Card, Form, Modal, InputGroup } from 'react-bootstrap'
 import type { Student, StudentList } from '../../types'
-import useGradeBook from '../../hooks/useGradeBook.ts'
 import Select, { type MultiValue } from 'react-select'
 import { type FormEvent, useState } from 'react'
 import makeAnimated from 'react-select/animated'
+import { X, Check } from 'lucide-react'
 
 function StudentListEdit({
   props: {
@@ -31,7 +31,6 @@ function StudentListEdit({
   }
 }) {
   const animatedComponents = makeAnimated()
-  const { className } = useGradeBook()
   const studentList = studentLists.find((list) => list.id === activeStudentList)
 
   const [error, setError] = useState<string>('')
@@ -78,7 +77,7 @@ function StudentListEdit({
     <Modal show={showModalStudentListEdit} onHide={handleClose} animation centered>
       <Form onSubmit={handleSubmit}>
         <Modal.Header className="justify-content-center" closeButton>
-          <Modal.Title as="h5">Редагування списку {className}</Modal.Title>
+          <Modal.Title as="h5">Редагування списку {name}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Card>
@@ -125,11 +124,13 @@ function StudentListEdit({
           </Card>
         </Modal.Body>
         <Modal.Footer className="justify-content-between">
-          <Button variant="primary" onClick={handleClose}>
-            Закрити
+          <Button variant="danger" onClick={handleClose}>
+            <X width={16} height={16} />
+            <span className="align-middle ms-1">Закрити</span>
           </Button>
-          <Button variant="danger" type="submit">
-            Зберегти
+          <Button variant="primary" type="submit">
+            <Check width={16} height={16} />
+            <span className="align-middle ms-1">Зберегти</span>
           </Button>
         </Modal.Footer>
       </Form>
