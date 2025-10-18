@@ -310,6 +310,7 @@ function App() {
           setStudentLists,
           showModalStudentListAdd,
           setShowModalStudentListAdd,
+          setToast,
         }}
       />
     )

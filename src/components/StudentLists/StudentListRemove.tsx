@@ -23,12 +23,17 @@ function StudentListRemove({
     setToast: (toast: ToastType) => void
   }
 }) {
+  console.info(activeStudentList)
+  const studentList = studentLists.find((list: StudentList) => list.id === activeStudentList)
+
+  if (!studentList) {
+    throw new Error('Student list not found')
+  }
+
   const handleClose = () => {
     setActiveStudentList('')
     setShowModalStudentListRemove(false)
   }
-
-  const studentList = studentLists.find((list: StudentList) => !(list.id === activeStudentList))
 
   const handleConfirm = async () => {
     const updatedLists = studentLists.filter(
@@ -50,10 +55,10 @@ function StudentListRemove({
   return (
     <Modal show={showModalStudentListRemove} onHide={handleClose} animation centered>
       <Modal.Header className="justify-content-center" closeButton>
-        <Modal.Title as="h5">Видалити {studentList?.name}?</Modal.Title>
+        <Modal.Title as="h5">Видалити {studentList.name}?</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        Ви впевнені, що хочете видалити список <span className="fw-bold">{studentList?.name}</span>?
+        Ви впевнені, що хочете видалити список <span className="fw-bold">{studentList.name}</span>?
       </Modal.Body>
       <Modal.Footer className="justify-content-between">
         <Button variant="danger" onClick={handleClose}>
