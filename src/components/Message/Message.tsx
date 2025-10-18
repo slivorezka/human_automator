@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { Toast, ToastContainer } from 'react-bootstrap'
 import { Bot } from 'lucide-react'
-import type { ToastType } from '../../types'
+import type { Variant } from 'react-bootstrap/types'
 
 function Message({
   children,
@@ -11,7 +11,7 @@ function Message({
 }: {
   children?: ReactNode
   show: boolean
-  type: ToastType
+  type: Variant
   onClose: () => void
 }) {
   return (

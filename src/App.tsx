@@ -560,7 +560,8 @@ function App() {
                                 setShowModalStudentListAdd(true)
                               }}
                             >
-                              Створити список учнів
+                              <Plus width={14} height={14} />
+                              <span className="align-middle ms-1">Створити список учнів</span>
                             </Button>
                           </div>
                         </div>

@@ -1,5 +1,5 @@
 import { Button, Card, Form, Modal, InputGroup } from 'react-bootstrap'
-import type { Student, StudentList } from '../../types'
+import type { Student, StudentList, ToastType } from '../../types'
 import Select, { type MultiValue } from 'react-select'
 import { type FormEvent, useState } from 'react'
 import makeAnimated from 'react-select/animated'
@@ -11,11 +11,12 @@ function StudentListEdit({
     selectedStudents,
     handleSelectedStudent,
     studentLists,
-    //setStudentLists,
+    setStudentLists,
     activeStudentList,
     setActiveStudentList,
     showModalStudentListEdit,
     setShowModalStudentListEdit,
+    setToast,
   },
 }: {
   props: {
@@ -23,15 +24,20 @@ function StudentListEdit({
     selectedStudents: Student[] | undefined
     handleSelectedStudent: (selectedOption: MultiValue<unknown>) => void
     studentLists: StudentList[]
-    setStudentLists: (studentList: StudentList[]) => void
+    setStudentLists: (studentLists: StudentList[]) => void
     activeStudentList: string
     setActiveStudentList: (name: string) => void
     showModalStudentListEdit: boolean
     setShowModalStudentListEdit: (status: boolean) => void
+    setToast: (toast: ToastType) => void
   }
 }) {
   const animatedComponents = makeAnimated()
   const studentList = studentLists.find((list) => list.id === activeStudentList)
+
+  if (!studentList) {
+    throw new Error('Student list not found')
+  }
 
   const [error, setError] = useState<string>('')
   const [name, setName] = useState<string>(studentList?.name || '')
@@ -51,26 +57,24 @@ function StudentListEdit({
       return
     }
 
-    const updatedLists = [
+    const updatedStudentLists = [
       ...(studentLists.filter((list: StudentList) => !(list.id === activeStudentList)) || {}),
       {
+        ...studentList,
         name,
         students: selectedStudents || [],
       },
     ]
 
-    /*await chrome.storage.local.set({
-      humanAutomator: { updatedLists },
-    })*/
+    await chrome.storage.local.set({
+      humanAutomator: { studentLists: updatedStudentLists },
+    })
 
-    /*console.info(activeStudentList)
-    console.info(selectedStudents)
-    console.info(studentLists)*/
-    console.info(updatedLists)
+    setStudentLists(updatedStudentLists)
+    setShowModalStudentListEdit(false)
+    setToast('studentListSave')
 
-    /*setActiveStudentList('')
-    setStudentLists(updatedLists)
-    setShowModalStudentListEdit(false)*/
+    handleClose()
   }
 
   return (
@@ -109,7 +113,7 @@ function StudentListEdit({
               <Select
                 className="mb-2"
                 placeholder="Оберіть учнів"
-                defaultValue={selectedStudents || []}
+                defaultValue={studentList?.students || []}
                 options={studentsList}
                 onChange={(options) => handleSelectedStudent(options)}
                 isMulti

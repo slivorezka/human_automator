@@ -1,5 +1,5 @@
 import { Button, Modal } from 'react-bootstrap'
-import type { StudentList } from '../../types'
+import type { StudentList, ToastType } from '../../types'
 import { X, Trash2 } from 'lucide-react'
 
 function StudentListRemove({
@@ -10,15 +10,17 @@ function StudentListRemove({
     setActiveStudentList,
     showModalStudentListRemove,
     setShowModalStudentListRemove,
+    setToast,
   },
 }: {
   props: {
     studentLists: StudentList[]
-    setStudentLists: (studentList: StudentList[]) => void
+    setStudentLists: (studentLists: StudentList[]) => void
     activeStudentList: string
     setActiveStudentList: (value: string) => void
     showModalStudentListRemove: boolean
     setShowModalStudentListRemove: (status: boolean) => void
+    setToast: (toast: ToastType) => void
   }
 }) {
   const handleClose = () => {
@@ -41,6 +43,7 @@ function StudentListRemove({
 
     setStudentLists(updatedLists)
     setShowModalStudentListRemove(false)
+    setToast('studentListDelete')
   }
 
   return (

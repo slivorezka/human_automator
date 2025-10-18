@@ -4,8 +4,8 @@ import { TIMING } from '../constants/config'
 import useGradeBook from './useGradeBook.ts'
 
 const useProcessing = () => {
-  const [isProcessing, setIsProcessing] = useState<boolean>(false)
   const isProcessingRef = useRef<boolean>(false)
+  const [isProcessing, setIsProcessing] = useState<boolean>(false)
 
   const { cellRemoveSelected } = useGradeBook()
 

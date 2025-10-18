@@ -9,12 +9,12 @@ export const useStudents = (): {
   isStudentTypeAll: boolean
   selectedStudents: Student[] | undefined
   setSelectedStudents: (students: Student[]) => void
-  listsStudent: StudentList[]
-  setStudentLists: (lists: StudentList[]) => void
+  studentLists: StudentList[]
+  setStudentLists: (studentLists: StudentList[]) => void
 } => {
   const [studentListType, setStudentListType] = useState<StudentListType>('all')
   const [selectedStudents, setSelectedStudents] = useState<Student[] | undefined>(undefined)
-  const [listsStudent, setStudentLists] = useState<StudentList[]>([])
+  const [studentLists, setStudentLists] = useState<StudentList[]>([])
 
   const isStudentTypeList = useMemo(() => studentListType === 'list', [studentListType])
   const isStudentTypeCustom = useMemo(() => studentListType === 'custom', [studentListType])
@@ -34,7 +34,7 @@ export const useStudents = (): {
     isStudentTypeAll,
     selectedStudents,
     setSelectedStudents,
-    listsStudent,
+    studentLists,
     setStudentLists,
   }
 }
