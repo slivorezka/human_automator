@@ -1,6 +1,6 @@
-import { Pencil, Plus,Trash2, X } from 'lucide-react'
+import { Pencil, Plus, Trash2, X } from 'lucide-react'
 import { useState } from 'react'
-import { Button, Card,Modal, Table } from 'react-bootstrap'
+import { Button, Card, Modal, Table } from 'react-bootstrap'
 import type { MultiValue } from 'react-select'
 
 import useGradeBook from '../../hooks/useGradeBook'
@@ -13,6 +13,8 @@ import StudentListRemove from './StudentListRemove'
 
 function StudentLists({
   props: {
+    studentLists,
+    setStudentLists,
     activeStudentList,
     setActiveStudentList,
     showModalStudentLists,
@@ -24,6 +26,8 @@ function StudentLists({
   },
 }: {
   props: {
+    studentLists: StudentList[]
+    setStudentLists: (studentLists: StudentList[]) => void
     activeStudentList: string
     setActiveStudentList: (value: string) => void
     showModalStudentLists: boolean
@@ -36,8 +40,6 @@ function StudentLists({
 }) {
   const { className } = useGradeBook()
   const {
-    studentLists,
-    setStudentLists,
     showModalStudentListAdd,
     setShowModalStudentListAdd,
     showModalStudentListEdit,

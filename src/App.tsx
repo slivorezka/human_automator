@@ -1,6 +1,6 @@
-import { Pencil, Play,Plus, X } from 'lucide-react'
-import { type FormEvent,useCallback, useEffect, useMemo, useState } from 'react'
-import { Button, Card, Form,InputGroup, Modal, ProgressBar } from 'react-bootstrap'
+import { Pencil, Play, Plus, X } from 'lucide-react'
+import { type FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
+import { Button, Card, Form, InputGroup, Modal, ProgressBar } from 'react-bootstrap'
 import { RotatingLines } from 'react-loader-spinner'
 import type { MultiValue } from 'react-select'
 import Select from 'react-select'
@@ -19,7 +19,7 @@ import useProcessing from './hooks/useProcessing'
 import useStudentLists from './hooks/useStudentLists'
 import useStudents from './hooks/useStudents'
 import type { Student, StudentListOption, ToastType } from './types'
-import { beep,shuffleArray } from './utils/gradebook'
+import { beep, shuffleArray } from './utils/gradebook'
 
 function App() {
   const animatedComponents = makeAnimated()
@@ -286,6 +286,8 @@ function App() {
     return (
       <StudentLists
         props={{
+          studentLists,
+          setStudentLists,
           activeStudentList,
           setActiveStudentList,
           showModalStudentLists,
@@ -502,10 +504,13 @@ function App() {
                           <Select
                             className="mb-2"
                             placeholder="Оберіть список учнів"
-                            options={studentLists.map((studentList) => ({
-                              value: studentList.id,
-                              label: `${studentList.name}`,
-                            }))}
+                            options={studentLists
+                              .slice()
+                              .sort((a, b) => a.name.localeCompare(b.name))
+                              .map((studentList) => ({
+                                value: studentList.id,
+                                label: `${studentList.name}`,
+                              }))}
                             onChange={(options) => handleSelectedStudentList(options)}
                             isMulti
                             required

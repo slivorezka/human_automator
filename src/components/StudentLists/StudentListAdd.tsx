@@ -107,7 +107,6 @@ function StudentListAdd({
               <Select
                 className="mb-2"
                 placeholder="Оберіть учнів"
-                defaultValue={selectedStudents}
                 options={studentsList}
                 onChange={(options) => handleSelectedStudent(options)}
                 isMulti
