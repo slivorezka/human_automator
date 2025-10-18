@@ -1,8 +1,10 @@
+import 'bootstrap/dist/js/bootstrap.bundle.min.js'
+import './scss/style.scss'
+
 import { StrictMode } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
-import 'bootstrap/dist/js/bootstrap.bundle.min.js'
+
 import App from './App.tsx'
-import './scss/style.scss'
 
 let rootHumanAutomator: Root | null
 

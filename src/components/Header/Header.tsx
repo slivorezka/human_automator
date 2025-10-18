@@ -1,5 +1,5 @@
-import { Modal } from 'react-bootstrap'
 import { Bot } from 'lucide-react'
+import { Modal } from 'react-bootstrap'
 
 function Header() {
   return (

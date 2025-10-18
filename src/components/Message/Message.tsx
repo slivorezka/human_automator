@@ -1,6 +1,6 @@
+import { Bot } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Toast, ToastContainer } from 'react-bootstrap'
-import { Bot } from 'lucide-react'
 import type { Variant } from 'react-bootstrap/types'
 
 function Message({

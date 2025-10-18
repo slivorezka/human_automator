@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+
 import type { StudentList, StudentListOption } from '../types'
 
 function useStudentLists() {

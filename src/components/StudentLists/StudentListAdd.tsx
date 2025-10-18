@@ -1,10 +1,11 @@
-import { Button, Card, Form, InputGroup, Modal } from 'react-bootstrap'
-import type { Student, StudentList, ToastType } from '../../types'
-import useGradeBook from '../../hooks/useGradeBook'
-import Select, { type MultiValue } from 'react-select'
-import { type FormEvent, useState } from 'react'
-import makeAnimated from 'react-select/animated'
 import { Check, X } from 'lucide-react'
+import { type FormEvent, useState } from 'react'
+import { Button, Card, Form, InputGroup, Modal } from 'react-bootstrap'
+import Select, { type MultiValue } from 'react-select'
+import makeAnimated from 'react-select/animated'
+
+import useGradeBook from '../../hooks/useGradeBook'
+import type { Student, StudentList, ToastType } from '../../types'
 
 function StudentListAdd({
   props: {

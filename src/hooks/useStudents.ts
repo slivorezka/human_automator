@@ -1,5 +1,6 @@
-import { useMemo, useState, useEffect } from 'react'
-import type { Student, StudentListType, StudentList } from '../types'
+import { useEffect,useMemo, useState } from 'react'
+
+import type { Student, StudentList,StudentListType } from '../types'
 
 export const useStudents = (): {
   studentListType: StudentListType

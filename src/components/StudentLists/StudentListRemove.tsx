@@ -1,6 +1,7 @@
+import { Trash2, X } from 'lucide-react'
 import { Button, Modal } from 'react-bootstrap'
+
 import type { StudentList, ToastType } from '../../types'
-import { X, Trash2 } from 'lucide-react'
 
 function StudentListRemove({
   props: {
@@ -23,7 +24,6 @@ function StudentListRemove({
     setToast: (toast: ToastType) => void
   }
 }) {
-  console.info(activeStudentList)
   const studentList = studentLists.find((list: StudentList) => list.id === activeStudentList)
 
   if (!studentList) {

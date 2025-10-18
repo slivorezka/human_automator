@@ -1,9 +1,10 @@
-import { Button, Card, Form, Modal, InputGroup } from 'react-bootstrap'
-import type { Student, StudentList, ToastType } from '../../types'
-import Select, { type MultiValue } from 'react-select'
+import { Check,X } from 'lucide-react'
 import { type FormEvent, useState } from 'react'
+import { Button, Card, Form, InputGroup,Modal } from 'react-bootstrap'
+import Select, { type MultiValue } from 'react-select'
 import makeAnimated from 'react-select/animated'
-import { X, Check } from 'lucide-react'
+
+import type { Student, StudentList, ToastType } from '../../types'
 
 function StudentListEdit({
   props: {
