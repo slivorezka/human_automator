@@ -42,8 +42,9 @@ function StudentListRemove({
     })
 
     setStudentLists(updatedLists)
-    setShowModalStudentListRemove(false)
     setToast('studentListDelete')
+
+    handleClose()
   }
 
   return (

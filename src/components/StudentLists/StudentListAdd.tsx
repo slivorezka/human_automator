@@ -1,5 +1,5 @@
 import { Button, Card, Form, InputGroup, Modal } from 'react-bootstrap'
-import type { Student, StudentList } from '../../types'
+import type { Student, StudentList, ToastType } from '../../types'
 import useGradeBook from '../../hooks/useGradeBook'
 import Select, { type MultiValue } from 'react-select'
 import { type FormEvent, useState } from 'react'
@@ -16,6 +16,7 @@ function StudentListAdd({
     setStudentLists,
     showModalStudentListAdd,
     setShowModalStudentListAdd,
+    setToast,
   },
 }: {
   props: {
@@ -27,6 +28,7 @@ function StudentListAdd({
     setStudentLists: (studentLists: StudentList[]) => void
     showModalStudentListAdd: boolean
     setShowModalStudentListAdd: (status: boolean) => void
+    setToast: (toast: ToastType) => void
   }
 }) {
   const animatedComponents = makeAnimated()
@@ -63,7 +65,7 @@ function StudentListAdd({
     })
 
     setStudentLists(updatedLists)
-    setShowModalStudentListAdd(false)
+    setToast('studentListAdd')
 
     handleClose()
   }

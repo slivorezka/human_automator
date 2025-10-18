@@ -76,6 +76,7 @@ function StudentLists({
           setStudentLists,
           showModalStudentListAdd,
           setShowModalStudentListAdd,
+          setToast,
         }}
       />
     )
@@ -120,6 +121,11 @@ function StudentLists({
     <>
       (isToast && (
       <>
+        {isToast == 'studentListAdd' && (
+          <Message show type="success" onClose={() => setToast('')}>
+            Список учнів успішно додано!
+          </Message>
+        )}
         {isToast == 'studentListSave' && (
           <Message show type="success" onClose={() => setToast('')}>
             Список учнів успішно збережено!

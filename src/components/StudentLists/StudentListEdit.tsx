@@ -71,7 +71,6 @@ function StudentListEdit({
     })
 
     setStudentLists(updatedStudentLists)
-    setShowModalStudentListEdit(false)
     setToast('studentListSave')
 
     handleClose()
