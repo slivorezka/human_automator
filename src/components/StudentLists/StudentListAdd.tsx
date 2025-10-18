@@ -9,6 +9,7 @@ function StudentListAdd({
   props: {
     studentsList,
     selectedStudents,
+    setSelectedStudents,
     handleSelectedStudent,
     studentLists,
     setStudentLists,
@@ -19,9 +20,10 @@ function StudentListAdd({
   props: {
     studentsList: Student[]
     selectedStudents: Student[] | undefined
+    setSelectedStudents: (students: Student[]) => void
     handleSelectedStudent: (selectedOption: MultiValue<unknown>) => void
     studentLists: StudentList[]
-    setStudentLists: (studentList: StudentList[]) => void
+    setStudentLists: (studentLists: StudentList[]) => void
     showModalStudentListAdd: boolean
     setShowModalStudentListAdd: (status: boolean) => void
   }
@@ -33,6 +35,7 @@ function StudentListAdd({
   const [name, setName] = useState<string>('')
 
   const handleClose = () => {
+    setSelectedStudents([])
     setShowModalStudentListAdd(false)
   }
 

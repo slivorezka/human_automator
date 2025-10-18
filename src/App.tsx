@@ -12,11 +12,12 @@ import useAction from './hooks/useAction'
 import useStudents from './hooks/useStudents'
 import useProcessing from './hooks/useProcessing'
 import { shuffleArray, beep } from './utils/gradebook'
-import type { Student, ToastType } from './types'
-import { EXAMPLE_RATING, MAX_RATING, MIN_RATING, TIMING } from './constants/config.ts'
+import type { Student, StudentListOption, ToastType } from './types'
+import { EXAMPLE_RATING, MAX_RATING, MIN_RATING, TIMING } from './constants/config'
 import Message from './components/Message'
 import useStudentLists from './hooks/useStudentLists'
 import StudentListAdd from './components/StudentLists/StudentListAdd'
+import { Plus, Pencil } from 'lucide-react'
 
 function App() {
   const animatedComponents = makeAnimated()
@@ -28,11 +29,15 @@ function App() {
     isStudentTypeAll,
     selectedStudents,
     setSelectedStudents,
-    listsStudent,
   } = useStudents()
 
-  const { studentLists, setStudentLists, showModalStudentListAdd, setShowModalStudentListAdd } =
-    useStudentLists()
+  const {
+    studentLists,
+    setStudentLists,
+    setSelectedStudentList,
+    showModalStudentListAdd,
+    setShowModalStudentListAdd,
+  } = useStudentLists()
 
   const {
     rows,
@@ -263,12 +268,21 @@ function App() {
     [setSelectedStudents]
   )
 
+  const handleSelectedStudentList = useCallback(
+    (selectedOption: MultiValue<unknown>) => {
+      setSelectedStudentList(selectedOption as unknown as StudentListOption[])
+      setPercentError('')
+    },
+    [setSelectedStudentList]
+  )
+
   if (showModalStudentListAdd) {
     return (
       <StudentListAdd
         props={{
           studentsList,
           selectedStudents,
+          setSelectedStudents,
           handleSelectedStudent,
           studentLists,
           setStudentLists,
@@ -454,36 +468,83 @@ function App() {
               </Card>
 
               {isStudentTypeList && (
-                <Card className="mt-3">
-                  <Card.Body>
-                    {studentLists?.length > 0 ? (
-                      <>
-                        <Form.Label className="fw-bold">Оберіть список учнів</Form.Label>
-                        <Form.Text>
-                          <span className="fw-bold">Оберіть список учнів</span>, яким бажаєте
-                          виставити оцінки
-                        </Form.Text>
-                      </>
-                    ) : (
-                      <div className="text-center">
-                        <p>
-                          Жодного <span className="fw-bold">списку учнів</span> ще не створено
-                        </p>
-                        <div>
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            onClick={() => {
-                              setShowModalStudentListAdd(true)
-                            }}
-                          >
-                            Створити список учнів
-                          </Button>
+                <>
+                  {studentLists?.length > 0 ? (
+                    <>
+                      <Card className="mt-3">
+                        <Card.Body>
+                          <Form.Label className="fw-bold">Списки учнів</Form.Label>
+                          <Select
+                            className="mb-2"
+                            placeholder="Оберіть список учнів"
+                            options={studentLists.map((studentList) => ({
+                              value: studentList.id,
+                              label: `${studentList.name}`,
+                            }))}
+                            onChange={(options) => handleSelectedStudentList(options)}
+                            isMulti
+                            required
+                            closeMenuOnSelect
+                            components={animatedComponents}
+                            isDisabled={isSubmitting}
+                          />
+                          <Form.Text>
+                            <span className="fw-bold">Оберіть список учнів</span>, яким бажаєте
+                            виставити оцінки
+                          </Form.Text>
+                        </Card.Body>
+                      </Card>
+                      <Card className="mt-3">
+                        <Card.Body>
+                          <div className="d-flex justify-content-between">
+                            <Button
+                              variant="success"
+                              size="sm"
+                              onClick={() => {
+                                setShowModalStudentListAdd(true)
+                              }}
+                            >
+                              <Plus width={14} height={14} />
+                              <span className="align-middle ms-1">Створити список учнів</span>
+                            </Button>
+
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              onClick={() => {
+                                setShowModalStudentListAdd(true)
+                              }}
+                            >
+                              <Pencil width={14} height={14} />
+                              <span className="align-middle ms-1">Редагувати списки учнів</span>
+                            </Button>
+                          </div>
+                        </Card.Body>
+                      </Card>
+                    </>
+                  ) : (
+                    <Card className="mt-3">
+                      <Card.Body>
+                        <div className="text-center">
+                          <p>
+                            Жодного <span className="fw-bold">списку учнів</span> ще не створено
+                          </p>
+                          <div>
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              onClick={() => {
+                                setShowModalStudentListAdd(true)
+                              }}
+                            >
+                              Створити список учнів
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  </Card.Body>
-                </Card>
+                      </Card.Body>
+                    </Card>
+                  )}
+                </>
               )}
 
               {isStudentTypeCustom && (
@@ -519,7 +580,7 @@ function App() {
                         max={MAX_RATING}
                         placeholder="Введіть мінімальну оцінку"
                         required
-                        disabled={isSubmitting || (isStudentTypeList && listsStudent.length === 0)}
+                        disabled={isSubmitting || (isStudentTypeList && studentLists.length === 0)}
                         isInvalid={!!error}
                         onChange={(e) => {
                           setMinRating(Number(e.target.value))
@@ -546,7 +607,7 @@ function App() {
                         max={MAX_RATING}
                         placeholder="Введіть максимальну оцінку"
                         required
-                        disabled={isSubmitting || (isStudentTypeList && listsStudent.length === 0)}
+                        disabled={isSubmitting || (isStudentTypeList && studentLists.length === 0)}
                         isInvalid={!!error}
                         onChange={(e) => {
                           setMaxRating(Number(e.target.value))
@@ -574,7 +635,7 @@ function App() {
                         placeholder="Введіть максимальний відсоток заповнення"
                         required
                         key={currentPercent}
-                        disabled={isSubmitting || (isStudentTypeList && listsStudent.length === 0)}
+                        disabled={isSubmitting || (isStudentTypeList && studentLists.length === 0)}
                         isInvalid={!!percentError}
                         defaultValue={currentPercent}
                         onChange={(e) => {
@@ -717,7 +778,7 @@ function App() {
           </Button>
           <Button
             disabled={
-              action === '' || isSubmitting || (isStudentTypeList && listsStudent.length === 0)
+              action === '' || isSubmitting || (isStudentTypeList && studentLists.length === 0)
             }
             variant="primary"
             type="submit"

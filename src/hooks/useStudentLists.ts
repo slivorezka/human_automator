@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
-import type { StudentList } from '../types'
+import type { StudentList, StudentListOption } from '../types'
 
 function useStudentLists() {
   const [studentLists, setStudentLists] = useState<StudentList[]>([])
+  const [selectedStudentList, setSelectedStudentList] = useState<StudentListOption[] | undefined>(
+    undefined
+  )
   const [showModalStudentList, setShowModalStudentList] = useState<boolean>(true)
   const [showModalStudentListAdd, setShowModalStudentListAdd] = useState<boolean>(false)
   const [showModalStudentListEdit, setShowModalStudentListEdit] = useState<boolean>(false)
@@ -20,6 +23,8 @@ function useStudentLists() {
   return {
     studentLists,
     setStudentLists,
+    selectedStudentList,
+    setSelectedStudentList,
     showModalStudentList,
     setShowModalStudentList,
     showModalStudentListAdd,

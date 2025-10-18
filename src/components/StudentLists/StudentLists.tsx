@@ -12,9 +12,11 @@ import { useEffect } from 'react'
 function StudentLists({
   studentsList,
   selectedStudents,
+  setSelectedStudents,
   handleSelectedStudent,
 }: {
   selectedStudents: Student[] | undefined
+  setSelectedStudents: (students: Student[]) => void
   studentsList: Student[]
   handleSelectedStudent: (selectedOption: MultiValue<unknown>) => void
 }) {
@@ -59,6 +61,7 @@ function StudentLists({
         props={{
           studentsList,
           selectedStudents,
+          setSelectedStudents,
           handleSelectedStudent,
           studentLists,
           setStudentLists,
