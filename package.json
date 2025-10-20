@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "watch:build": "chokidar 'src/**/*' -c 'npm run build:dev'",
+    "watch:build": "chokidar 'src/**/*' -c 'npm run build'",
     "build:dev": "tsc -b && DEV=true vite build",
     "build": "tsc -b && vite build",
     "lint": "eslint .",

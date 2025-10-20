@@ -12,6 +12,7 @@ let rootHumanAutomator: Root | null
 
 window.addEventListener('runHumanAutomator', async () => {
   useStudentsStore.getState().loadStudentsList()
+
   await useStudentListsStore.getState().loadStudentLists()
 
   const app = document.createElement('div')

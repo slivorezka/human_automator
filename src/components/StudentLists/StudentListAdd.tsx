@@ -37,7 +37,6 @@ function StudentListAdd() {
     }
 
     setToast('StudentListAdd')
-
     handleClose()
   }
 
@@ -91,11 +90,11 @@ function StudentListAdd() {
           </Card>
         </Modal.Body>
         <Modal.Footer className="justify-content-between">
-          <Button variant="primary" onClick={handleClose}>
+          <Button variant="danger" onClick={handleClose}>
             <X width={16} height={16} />
             <span className="align-middle ms-1">Закрити</span>
           </Button>
-          <Button variant="danger" type="submit">
+          <Button variant="primary" type="submit">
             <Check width={16} height={16} />
             <span className="align-middle ms-1">Зберегти</span>
           </Button>

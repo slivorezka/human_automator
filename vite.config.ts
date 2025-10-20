@@ -1,8 +1,9 @@
-import { defineConfig, type Plugin, type ResolvedConfig } from 'vite'
+import { Dirent, existsSync, readdir, readFileSync, writeFileSync } from 'node:fs'
+import path, { join, resolve } from 'node:path'
+
 import react from '@vitejs/plugin-react'
-import path, { resolve, join } from 'node:path'
+import { defineConfig, type Plugin, type ResolvedConfig } from 'vite'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
-import { readFileSync, writeFileSync, existsSync, readdir, Dirent } from 'node:fs'
 
 function updateManifest(): Plugin {
   let viteConfig: ResolvedConfig
@@ -93,36 +94,38 @@ function updateManifest(): Plugin {
   }
 }
 
-export default defineConfig({
-  plugins: [
-    react({
-      babel: {
-        plugins: [['babel-plugin-react-compiler']],
-      },
-    }),
-    viteStaticCopy({
-      targets: [
-        {
-          src: 'src/assets/icons',
-          dest: '',
+export default defineConfig(() => {
+  const dev = process.env.DEV === 'true'
+
+  return {
+    plugins: [
+      react({
+        babel: {
+          plugins: [['babel-plugin-react-compiler']],
         },
-        {
-          src: 'manifest.json',
-          dest: '',
-        },
-      ],
-    }),
-    updateManifest(),
-  ],
-  define: {
-    'process.env.NODE_ENV': JSON.stringify('production'),
-  },
-  build: {
-    emptyOutDir: true,
-    outDir: 'dist',
-    minify: 'terser',
-    terserOptions:
-      process.env.DEV !== 'true'
+      }),
+      viteStaticCopy({
+        targets: [
+          {
+            src: 'src/assets/icons',
+            dest: '',
+          },
+          {
+            src: 'manifest.json',
+            dest: '',
+          },
+        ],
+      }),
+      dev ? undefined : updateManifest(),
+    ],
+    define: {
+      'process.env.NODE_ENV': JSON.stringify('production'),
+    },
+    build: {
+      emptyOutDir: true,
+      outDir: 'dist',
+      minify: dev ? false : 'terser',
+      terserOptions: !dev
         ? {
             compress: {
               drop_console: true,
@@ -130,19 +133,26 @@ export default defineConfig({
             },
           }
         : undefined,
-    rollupOptions: {
-      input: {
-        background: resolve(__dirname, 'src/background.ts'),
-        index: resolve(__dirname, 'src/index.tsx'),
-      },
-      output: {
-        inlineDynamicImports: false,
-        format: 'es',
-        entryFileNames: '[name]-[hash].js',
-        chunkFileNames: '[name]-[hash].js',
-        assetFileNames: ({ names }) =>
-          names[0]?.endsWith('.css') ? 'style-[hash].[ext]' : '[name]-[hash].[ext]',
+      rollupOptions: {
+        input: {
+          background: resolve(__dirname, 'src/background.ts'),
+          index: resolve(__dirname, 'src/index.tsx'),
+        },
+        output: {
+          inlineDynamicImports: false,
+          format: 'es',
+          entryFileNames: dev ? '[name].js' : '[name]-[hash].js',
+          chunkFileNames: dev ? '[hash].js' : '[name]-[hash].js',
+          assetFileNames: ({ names }) =>
+            names[0]?.endsWith('.css')
+              ? dev
+                ? 'style.[ext]'
+                : 'style-[hash].[ext]'
+              : dev
+                ? '[name].[ext]'
+                : '[name]-[hash].[ext]',
+        },
       },
     },
-  },
+  }
 })
