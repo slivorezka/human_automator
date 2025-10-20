@@ -5,8 +5,12 @@ import { StrictMode } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 
 import App from './App'
-import { useStudentListsStore } from './stores/useStudentListsStore'
+import useActionStore from './stores/useActionStore'
+import useAppStore from './stores/useAppStore'
+import useFormErrorStore from './stores/useFormErrorStore'
+import useStudentListsStore from './stores/useStudentListsStore'
 import useStudentsStore from './stores/useStudentsStore'
+import useToastStore from './stores/useToastStore'
 
 let rootHumanAutomator: Root | null
 
@@ -30,6 +34,13 @@ window.addEventListener('runHumanAutomator', async () => {
 window.addEventListener('destroyHumanAutomator', () => {
   rootHumanAutomator?.unmount()
   rootHumanAutomator = null
+
+  useActionStore.getState().reset()
+  useAppStore.getState().reset()
+  useFormErrorStore.getState().reset()
+  useStudentListsStore.getState().reset()
+  useStudentsStore.getState().reset()
+  useToastStore.getState().reset()
 
   document.getElementById('human-automator')?.remove()
 })

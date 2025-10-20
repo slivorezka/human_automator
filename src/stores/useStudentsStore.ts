@@ -13,6 +13,7 @@ const useStudentsStore = create<{
   setSelectedStudents: (students: Student[]) => void
   handleSelectedStudents: (students: MultiValue<Student>) => void
   loadStudentsList: () => void
+  reset: () => void
 }>((set, get) => ({
   studentsList: [],
   selectedStudents: [],
@@ -28,6 +29,7 @@ const useStudentsStore = create<{
   loadStudentsList: () => {
     set({ studentsList: students() })
   },
+  reset: () => set({ studentsList: [], selectedStudents: [] }),
 }))
 
 export default useStudentsStore

@@ -6,10 +6,13 @@ import { className } from '../utils/gradebook'
 import useFormErrorStore from './useFormErrorStore'
 import useStudentsStore from './useStudentsStore'
 
-export const useStudentListsStore = create<{
+const useStudentListsStore = create<{
   studentListId: string
   studentListType: StudentListType
   studentLists: StudentList[]
+  isStudentTypeListAll: boolean
+  isStudentTypeList: boolean
+  isStudentTypeCustom: boolean
   selectedStudentLists: StudentList[]
   showModalStudentLists: boolean
   showModalStudentListAdd: boolean
@@ -29,11 +32,16 @@ export const useStudentListsStore = create<{
   updateStudentList: (id: string, name: string, students: Student[]) => Promise<void>
   removeStudentList: (id: string) => Promise<void>
   isListNameExists: (name: string) => boolean
+  setStudentTypeList: (studentListType: StudentListType) => void
+  reset: () => void
 }>((set, get) => ({
   studentListId: '',
   studentListType: 'all',
   selectedStudentLists: [],
   studentLists: [],
+  isStudentTypeListAll: false,
+  isStudentTypeList: false,
+  isStudentTypeCustom: false,
   showModalStudentLists: false,
   showModalStudentListAdd: false,
   showModalStudentListEdit: false,
@@ -119,21 +127,27 @@ export const useStudentListsStore = create<{
   isListNameExists: (name) => {
     return get().studentLists.some((list) => list.name === name)
   },
+  setStudentTypeList: (studentListType) =>
+    set({
+      studentListType,
+      isStudentTypeListAll: studentListType === 'all',
+      isStudentTypeList: studentListType === 'list',
+      isStudentTypeCustom: studentListType === 'custom',
+    }),
+  reset: () =>
+    set({
+      studentListId: '',
+      studentListType: 'all',
+      selectedStudentLists: [],
+      studentLists: [],
+      isStudentTypeListAll: false,
+      isStudentTypeList: false,
+      isStudentTypeCustom: false,
+      showModalStudentLists: false,
+      showModalStudentListAdd: false,
+      showModalStudentListEdit: false,
+      showModalStudentListRemove: false,
+    }),
 }))
 
-export const useStudentListType = () => useStudentListsStore((s) => s.studentListType)
-
-export const useIsStudentTypeList = () => useStudentListsStore((s) => s.studentListType === 'list')
-
-export const useIsStudentTypeCustom = () =>
-  useStudentListsStore((s) => s.studentListType === 'custom')
-
-export const useIsStudentTypeAll = () => useStudentListsStore((s) => s.studentListType === 'all')
-
-export const useStudentLists = () => useStudentListsStore((s) => s.studentLists)
-
-export const useStudentsActions = () =>
-  useStudentListsStore((s) => ({
-    setStudentListType: s.setStudentListType,
-    setStudentLists: s.setStudentLists,
-  }))
+export default useStudentListsStore

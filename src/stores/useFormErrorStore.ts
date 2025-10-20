@@ -7,6 +7,7 @@ const useFormErrorStore = create<{
   setPercentError: (error: string) => void
   setRatingError: (error: string) => void
   setNameError: (error: string) => void
+  reset: () => void
 }>((set) => ({
   ratingError: '',
   percentError: '',
@@ -14,6 +15,7 @@ const useFormErrorStore = create<{
   setPercentError: (error) => set({ percentError: error }),
   setRatingError: (error) => set({ ratingError: error }),
   setNameError: (error) => set({ nameError: error }),
+  reset: () => set({ ratingError: '', percentError: '', nameError: '' }),
 }))
 
 export default useFormErrorStore

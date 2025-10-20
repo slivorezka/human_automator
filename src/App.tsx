@@ -1,5 +1,5 @@
 import { Pencil, Play, Plus, X } from 'lucide-react'
-import { type FormEvent, useEffect, useMemo, useState } from 'react'
+import { type FormEvent } from 'react'
 import { Button, Card, Form, InputGroup, Modal, ProgressBar } from 'react-bootstrap'
 import { RotatingLines } from 'react-loader-spinner'
 import type { MultiValue } from 'react-select'
@@ -13,32 +13,41 @@ import RatingCount from './components/RatingCount'
 import StudentListAdd from './components/StudentLists/StudentListAdd'
 import StudentLists from './components/StudentLists/StudentLists'
 import { EXAMPLE_RATING, MAX_RATING, MIN_RATING, TIMING } from './constants/config'
-import useAction from './hooks/useAction'
-import useGradeBook from './hooks/useGradeBook'
 import useProcessing from './hooks/useProcessing'
+import useActionStore from './stores/useActionStore'
 import useAppStore from './stores/useAppStore'
 import useFormErrorStore from './stores/useFormErrorStore'
-import {
-  useIsStudentTypeAll,
-  useIsStudentTypeCustom,
-  useIsStudentTypeList,
-  useStudentListsStore,
-} from './stores/useStudentListsStore'
+import useStudentListsStore from './stores/useStudentListsStore'
 import useStudentsStore from './stores/useStudentsStore'
 import useToastStore from './stores/useToastStore'
 import type { Student, StudentList, ToastType } from './types'
-import { beep, fillPercent, shuffleArray, students } from './utils/gradebook'
+import {
+  beep,
+  cellAbsent,
+  cellRemoveSelected,
+  cellsNarrow,
+  fillPercent,
+  getCells,
+  getRows,
+  rating,
+  ratingComment,
+  shuffleArray,
+  studentName,
+  toolPanel,
+} from './utils/gradebook'
 
 function App() {
   const animatedComponents = makeAnimated()
+  const appStore = useAppStore.getState()
 
   const {
+    setProcessing,
     minRating,
     setMinRating,
     maxRating,
     setMaxRating,
     isSubmitting,
-    setIsSubmitting,
+    setSubmitting,
     isRunCountRating,
     setCountRating,
     removeRating,
@@ -52,13 +61,12 @@ function App() {
   } = useAppStore()
 
   const { ratingError, setRatingError, percentError, setPercentError } = useFormErrorStore()
-  const { selectedStudents, handleSelectedStudents } = useStudentsStore()
-
-  const isStudentTypeAll = useIsStudentTypeAll()
-  const isStudentTypeList = useIsStudentTypeList()
-  const isStudentTypeCustom = useIsStudentTypeCustom()
+  const { studentsList, selectedStudents, handleSelectedStudents } = useStudentsStore()
 
   const {
+    isStudentTypeListAll,
+    isStudentTypeList,
+    isStudentTypeCustom,
     selectedStudentLists,
     handleSelectedStudentLists,
     studentLists,
@@ -72,32 +80,21 @@ function App() {
   const { toast, setToast } = useToastStore()
 
   const {
-    rows,
-    cells,
-    cellsNarrow,
-    cellAbsent,
-    rating,
-    ratingComment,
-    studentName,
-    toolPanel,
-    cellRemoveSelected,
-  } = useGradeBook()
-
-  const { action, setAction, isSetRating, isDeleteRating, isCountRating } = useAction()
-  const { isProcessing, setIsProcessing, processItem, isProcessingRef } = useProcessing()
-  const studentsList = useMemo(() => students(), [])
-
-  const [showModal, setShowModal] = useState<boolean>(true)
-
-  useEffect(() => {
-    isProcessingRef.current = isProcessing
-  }, [isProcessing, isProcessingRef])
+    action,
+    setAction,
+    isSetRating,
+    isDeleteRating,
+    isCountRating,
+    showActionModal,
+    setShowActionModal,
+  } = useActionStore()
+  const { processItem } = useProcessing()
 
   const handleStop = (status: ToastType) => {
-    setIsProcessing(false)
+    setProcessing(false)
     toolPanel(false)
     cellRemoveSelected(false)
-    setShowModal(false)
+    setShowActionModal(false)
     setToast(status)
     beep()
     setTimeout(
@@ -109,11 +106,11 @@ function App() {
   const handleClose = () => {
     toolPanel(false)
     cellRemoveSelected(false)
-    setShowModal(false)
+    setShowActionModal(false)
     let destroy = TIMING.DESTROY_APP_DELAY
 
-    if (isProcessing) {
-      setIsProcessing(false)
+    if (appStore.isProcessing) {
+      setProcessing(false)
       setToast('GeneralCancel')
       beep()
       destroy = TIMING.DESTROY_TOAST_APP_DELAY
@@ -139,8 +136,8 @@ function App() {
         return
       }
 
-      setIsSubmitting(true)
-      setIsProcessing(true)
+      setSubmitting(true)
+      setProcessing(true)
 
       const emptyCells: HTMLElement[] = []
 
@@ -160,7 +157,7 @@ function App() {
           }
         }*/
       } else if (selectedStudents) {
-        for (const row of rows) {
+        for (const row of getRows()) {
           if (selectedStudents.find((student) => student.value === studentName(row))) {
             for (const cell of [...cellsNarrow(row)]) {
               if (
@@ -174,7 +171,7 @@ function App() {
           }
         }
       } else {
-        for (const cell of cells) {
+        for (const cell of getCells()) {
           if (
             ratingComment(cell as HTMLElement) &&
             !cellAbsent(cell as HTMLElement) &&
@@ -196,7 +193,7 @@ function App() {
 
         setCurrentPercent(percent)
 
-        if (!isProcessingRef.current) {
+        if (!appStore.isProcessing) {
           handleStop('GeneralCancel')
           return
         }
@@ -210,8 +207,8 @@ function App() {
     }
 
     if (isDeleteRating) {
-      setIsSubmitting(true)
-      setIsProcessing(true)
+      setSubmitting(true)
+      setProcessing(true)
 
       const cells: HTMLElement[] = []
 
@@ -238,13 +235,13 @@ function App() {
       }
 
       if (selectedStudents) {
-        for (const row of rows) {
+        for (const row of getRows()) {
           if (selectedStudents.find((student) => student.value === studentName(row))) {
             processRow(row)
           }
         }
       } else {
-        for (const row of rows) {
+        for (const row of getRows()) {
           processRow(row)
         }
       }
@@ -257,7 +254,7 @@ function App() {
 
         setCurrentPercent(fillPercent(selectedStudents))
 
-        if (!isProcessingRef.current) {
+        if (!appStore.isProcessing) {
           handleStop('GeneralCancel')
           return
         }
@@ -298,7 +295,7 @@ function App() {
 
   if (isRunCountRating) {
     return (
-      <Modal show={showModal} onHide={handleClose} centered>
+      <Modal show={showActionModal} onHide={handleClose} centered>
         <Header />
         <Modal.Body>
           <Card>
@@ -317,8 +314,8 @@ function App() {
     )
   }
 
-  return isProcessing ? (
-    <Modal show={showModal} onHide={handleClose} centered>
+  return useAppStore.getState().isProcessing ? (
+    <Modal show={showActionModal} onHide={handleClose} centered>
       <Header />
       <Modal.Body>
         <ProgressBar
@@ -359,7 +356,7 @@ function App() {
       </Modal.Footer>
     </Modal>
   ) : (
-    <Modal show={showModal} onHide={handleClose} centered animation>
+    <Modal show={showActionModal} onHide={handleClose} centered animation>
       <Form onSubmit={handleSubmit}>
         <Header />
         <Modal.Body>
@@ -414,7 +411,7 @@ function App() {
                     onChange={(e) =>
                       e.target.checked ? setStudentListType('all') : setStudentListType('all')
                     }
-                    checked={isStudentTypeAll}
+                    checked={isStudentTypeListAll}
                     disabled={isSubmitting}
                   />
                   <Form.Check

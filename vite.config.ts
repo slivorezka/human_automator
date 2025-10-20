@@ -116,7 +116,7 @@ export default defineConfig(() => {
           },
         ],
       }),
-      dev ? undefined : updateManifest(),
+      updateManifest(),
     ],
     define: {
       'process.env.NODE_ENV': JSON.stringify('production'),
@@ -124,7 +124,7 @@ export default defineConfig(() => {
     build: {
       emptyOutDir: true,
       outDir: 'dist',
-      minify: dev ? false : 'terser',
+      minify: 'terser',
       terserOptions: !dev
         ? {
             compress: {
@@ -141,16 +141,10 @@ export default defineConfig(() => {
         output: {
           inlineDynamicImports: false,
           format: 'es',
-          entryFileNames: dev ? '[name].js' : '[name]-[hash].js',
-          chunkFileNames: dev ? '[hash].js' : '[name]-[hash].js',
+          entryFileNames: '[name]-[hash].js',
+          chunkFileNames: '[name]-[hash].js',
           assetFileNames: ({ names }) =>
-            names[0]?.endsWith('.css')
-              ? dev
-                ? 'style.[ext]'
-                : 'style-[hash].[ext]'
-              : dev
-                ? '[name].[ext]'
-                : '[name]-[hash].[ext]',
+            names[0]?.endsWith('.css') ? 'style-[hash].[ext]' : '[name]-[hash].[ext]',
         },
       },
     },

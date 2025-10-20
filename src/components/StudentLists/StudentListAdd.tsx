@@ -5,7 +5,7 @@ import Select, { type MultiValue } from 'react-select'
 import makeAnimated from 'react-select/animated'
 
 import useFormErrorStore from '../../stores/useFormErrorStore'
-import { useStudentListsStore } from '../../stores/useStudentListsStore'
+import useStudentListsStore from '../../stores/useStudentListsStore'
 import useStudentsStore from '../../stores/useStudentsStore'
 import useToastStore from '../../stores/useToastStore'
 import type { Student } from '../../types'

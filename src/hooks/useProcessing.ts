@@ -1,19 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
-
 import { TIMING } from '../constants/config'
+import useAppStore from '../stores/useAppStore'
 import { getRandomInt } from '../utils/gradebook'
-import useGradeBook from './useGradeBook'
+import { cellRemoveSelected } from '../utils/gradebook'
 
 const useProcessing = () => {
-  const isProcessingRef = useRef<boolean>(false)
-  const [isProcessing, setIsProcessing] = useState<boolean>(false)
-
-  const { cellRemoveSelected } = useGradeBook()
-
-  useEffect(() => {
-    isProcessingRef.current = isProcessing
-  }, [isProcessing])
-
   const processItem = async ({
     cell,
     minRating,
@@ -25,9 +15,11 @@ const useProcessing = () => {
     maxRating?: number
     remove?: boolean
   }): Promise<void> => {
+    const appStore = useAppStore.getState()
+
     return new Promise<void>((resolve) => {
       setTimeout(() => {
-        if (!isProcessingRef.current) {
+        if (!appStore.isProcessing) {
           resolve()
           return
         }
@@ -42,7 +34,7 @@ const useProcessing = () => {
         })
 
         setTimeout(() => {
-          if (!isProcessingRef.current) {
+          if (!appStore.isProcessing) {
             resolve()
             return
           }
@@ -62,7 +54,7 @@ const useProcessing = () => {
           inputMarkGroup.dispatchEvent(new Event('input', { bubbles: true }))
 
           setTimeout(() => {
-            if (!isProcessingRef.current) {
+            if (!appStore.isProcessing) {
               resolve()
               return
             }
@@ -82,7 +74,7 @@ const useProcessing = () => {
     })
   }
 
-  return { isProcessing, setIsProcessing, processItem, isProcessingRef }
+  return { processItem }
 }
 
 export default useProcessing

@@ -1,7 +1,7 @@
 import { Pencil, Plus, Trash2, X } from 'lucide-react'
 import { Button, Card, Modal, Table } from 'react-bootstrap'
 
-import { useStudentListsStore } from '../../stores/useStudentListsStore'
+import useStudentListsStore from '../../stores/useStudentListsStore'
 import useToastStore from '../../stores/useToastStore'
 import type { StudentList } from '../../types'
 import { className } from '../../utils/gradebook'

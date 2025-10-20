@@ -1,7 +1,7 @@
 import { Trash2, X } from 'lucide-react'
 import { Button, Modal } from 'react-bootstrap'
 
-import { useStudentListsStore } from '../../stores/useStudentListsStore'
+import useStudentListsStore from '../../stores/useStudentListsStore'
 import useToastStore from '../../stores/useToastStore'
 
 function StudentListRemove() {
