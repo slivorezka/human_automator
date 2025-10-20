@@ -1,141 +1,76 @@
 import { Pencil, Plus, Trash2, X } from 'lucide-react'
-import { useState } from 'react'
 import { Button, Card, Modal, Table } from 'react-bootstrap'
-import type { MultiValue } from 'react-select'
 
-import useGradeBook from '../../hooks/useGradeBook'
-import useStudentLists from '../../hooks/useStudentLists'
-import type { Student, StudentList, ToastType } from '../../types'
+import { useStudentListsStore } from '../../stores/useStudentListsStore'
+import useToastStore from '../../stores/useToastStore'
+import type { StudentList } from '../../types'
+import { className } from '../../utils/gradebook'
 import Message from '../Message'
 import StudentListAdd from './StudentListAdd'
 import StudentListEdit from './StudentListEdit'
 import StudentListRemove from './StudentListRemove'
 
-function StudentLists({
-  props: {
-    studentLists,
-    setStudentLists,
-    activeStudentList,
-    setActiveStudentList,
-    showModalStudentLists,
-    setShowModalStudentLists,
-    studentsList,
-    selectedStudents,
-    setSelectedStudents,
-    handleSelectedStudent,
-  },
-}: {
-  props: {
-    studentLists: StudentList[]
-    setStudentLists: (studentLists: StudentList[]) => void
-    activeStudentList: string
-    setActiveStudentList: (value: string) => void
-    showModalStudentLists: boolean
-    setShowModalStudentLists: (status: boolean) => void
-    selectedStudents: Student[] | undefined
-    setSelectedStudents: (students: Student[]) => void
-    studentsList: Student[]
-    handleSelectedStudent: (selectedOption: MultiValue<unknown>) => void
-  }
-}) {
-  const { className } = useGradeBook()
+function StudentLists() {
   const {
+    studentLists,
+    showModalStudentLists,
     showModalStudentListAdd,
-    setShowModalStudentListAdd,
     showModalStudentListEdit,
-    setShowModalStudentListEdit,
     showModalStudentListRemove,
+    setShowModalStudentLists,
+    setShowModalStudentListAdd,
+    setShowModalStudentListEdit,
     setShowModalStudentListRemove,
-  } = useStudentLists()
+    setStudentListId,
+  } = useStudentListsStore()
 
   const handleClose = () => setShowModalStudentLists(false)
 
   const handleAdd = () => {
-    setActiveStudentList('')
+    setStudentListId('')
     setShowModalStudentListAdd(true)
   }
 
   const handleEdit = (studentList: StudentList) => {
-    setActiveStudentList(studentList.id)
+    setStudentListId(studentList.id)
     setShowModalStudentListEdit(true)
   }
 
   const handleRemove = (studentList: StudentList) => {
-    setActiveStudentList(studentList.id)
+    setStudentListId(studentList.id)
     setShowModalStudentListRemove(true)
   }
 
-  const [isToast, setToast] = useState<ToastType>('')
+  const { toast, setToast } = useToastStore()
 
   if (showModalStudentListAdd) {
-    return (
-      <StudentListAdd
-        props={{
-          studentsList,
-          selectedStudents,
-          setSelectedStudents,
-          handleSelectedStudent,
-          studentLists,
-          setStudentLists,
-          showModalStudentListAdd,
-          setShowModalStudentListAdd,
-          setToast,
-        }}
-      />
-    )
+    return <StudentListAdd />
   }
 
   if (showModalStudentListEdit) {
-    return (
-      <StudentListEdit
-        props={{
-          studentsList,
-          selectedStudents,
-          handleSelectedStudent,
-          studentLists,
-          setStudentLists,
-          activeStudentList,
-          setActiveStudentList,
-          showModalStudentListEdit,
-          setShowModalStudentListEdit,
-          setToast,
-        }}
-      />
-    )
+    return <StudentListEdit />
   }
 
   if (showModalStudentListRemove) {
-    return (
-      <StudentListRemove
-        props={{
-          studentLists,
-          setStudentLists,
-          activeStudentList,
-          setActiveStudentList,
-          showModalStudentListRemove,
-          setShowModalStudentListRemove,
-          setToast,
-        }}
-      />
-    )
+    return <StudentListRemove />
   }
 
   return (
     <>
-      (isToast && (
+      (toast && (
       <>
-        {isToast == 'studentListAdd' && (
-          <Message show type="success" onClose={() => setToast('')}>
+        {toast === 'StudentListAdd' && (
+          <Message type="success" onClose={() => setToast(false)}>
             Список учнів успішно додано!
           </Message>
         )}
-        {isToast == 'studentListSave' && (
-          <Message show type="success" onClose={() => setToast('')}>
+        {toast === 'StudentListSave' && (
+          <Message type="success" onClose={() => setToast(false)}>
             Список учнів успішно збережено!
           </Message>
         )}
-        {isToast == 'studentListDelete' && (
-          <Message show type="success" onClose={() => setToast('')}>
+        {toast === 'StudentListDelete' && (
+          <Message type="success" onClose={() => setToast(false)}>
             Список учнів успішно видалено!
           </Message>
         )}
@@ -143,7 +78,7 @@ function StudentLists({
       )
       <Modal show={showModalStudentLists} onHide={handleClose} centered animation>
         <Modal.Header className="justify-content-center" closeButton>
-          <Modal.Title as="h5">Списки учнів {className}</Modal.Title>
+          <Modal.Title as="h5">Списки учнів {className()}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {studentLists.length > 0 ? (

@@ -1,54 +1,35 @@
 import { Trash2, X } from 'lucide-react'
 import { Button, Modal } from 'react-bootstrap'
 
-import type { StudentList, ToastType } from '../../types'
+import { useStudentListsStore } from '../../stores/useStudentListsStore'
+import useToastStore from '../../stores/useToastStore'
 
-function StudentListRemove({
-  props: {
-    studentLists,
-    setStudentLists,
-    activeStudentList,
-    setActiveStudentList,
+function StudentListRemove() {
+  const {
+    studentListId,
     showModalStudentListRemove,
     setShowModalStudentListRemove,
-    setToast,
-  },
-}: {
-  props: {
-    studentLists: StudentList[]
-    setStudentLists: (studentLists: StudentList[]) => void
-    activeStudentList: string
-    setActiveStudentList: (value: string) => void
-    showModalStudentListRemove: boolean
-    setShowModalStudentListRemove: (status: boolean) => void
-    setToast: (toast: ToastType) => void
-  }
-}) {
-  const studentList = studentLists.find((list: StudentList) => list.id === activeStudentList)
+    getStudentListById,
+    setStudentListId,
+    removeStudentList,
+  } = useStudentListsStore()
+
+  const { setToast } = useToastStore()
+
+  const studentList = getStudentListById(studentListId)
 
   if (!studentList) {
     throw new Error('Student list not found')
   }
 
   const handleClose = () => {
-    setActiveStudentList('')
+    setStudentListId('')
     setShowModalStudentListRemove(false)
   }
 
   const handleConfirm = async () => {
-    const updatedLists = studentLists.filter(
-      (list: StudentList) => !(list.id === activeStudentList)
-    )
-
-    await chrome.storage.local.set({
-      humanAutomator: {
-        studentLists: updatedLists,
-      },
-    })
-
-    setStudentLists(updatedLists)
-    setToast('studentListDelete')
-
+    await removeStudentList(studentListId)
+    setToast('StudentListDelete')
     handleClose()
   }
 

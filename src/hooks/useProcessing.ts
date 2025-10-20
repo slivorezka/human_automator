@@ -1,8 +1,8 @@
-import { useEffect, useRef,useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { TIMING } from '../constants/config'
 import { getRandomInt } from '../utils/gradebook'
-import useGradeBook from './useGradeBook.ts'
+import useGradeBook from './useGradeBook'
 
 const useProcessing = () => {
   const isProcessingRef = useRef<boolean>(false)

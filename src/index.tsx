@@ -4,11 +4,16 @@ import './scss/style.scss'
 import { StrictMode } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 
-import App from './App.tsx'
+import App from './App'
+import { useStudentListsStore } from './stores/useStudentListsStore'
+import useStudentsStore from './stores/useStudentsStore'
 
 let rootHumanAutomator: Root | null
 
-window.addEventListener('runHumanAutomator', () => {
+window.addEventListener('runHumanAutomator', async () => {
+  useStudentsStore.getState().loadStudentsList()
+  await useStudentListsStore.getState().loadStudentLists()
+
   const app = document.createElement('div')
   app.id = 'human-automator'
   document.body.append(app)

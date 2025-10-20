@@ -1,5 +1,5 @@
 import { Pencil, Play, Plus, X } from 'lucide-react'
-import { type FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
+import { type FormEvent, useEffect, useMemo, useState } from 'react'
 import { Button, Card, Form, InputGroup, Modal, ProgressBar } from 'react-bootstrap'
 import { RotatingLines } from 'react-loader-spinner'
 import type { MultiValue } from 'react-select'
@@ -16,34 +16,60 @@ import { EXAMPLE_RATING, MAX_RATING, MIN_RATING, TIMING } from './constants/conf
 import useAction from './hooks/useAction'
 import useGradeBook from './hooks/useGradeBook'
 import useProcessing from './hooks/useProcessing'
-import useStudentLists from './hooks/useStudentLists'
-import useStudents from './hooks/useStudents'
-import type { Student, StudentListOption, ToastType } from './types'
-import { beep, shuffleArray } from './utils/gradebook'
+import useAppStore from './stores/useAppStore'
+import useFormErrorStore from './stores/useFormErrorStore'
+import {
+  useIsStudentTypeAll,
+  useIsStudentTypeCustom,
+  useIsStudentTypeList,
+  useStudentListsStore,
+} from './stores/useStudentListsStore'
+import useStudentsStore from './stores/useStudentsStore'
+import useToastStore from './stores/useToastStore'
+import type { Student, StudentList, ToastType } from './types'
+import { beep, fillPercent, shuffleArray, students } from './utils/gradebook'
 
 function App() {
   const animatedComponents = makeAnimated()
 
   const {
-    setStudentListType,
-    isStudentTypeList,
-    isStudentTypeCustom,
-    isStudentTypeAll,
-    selectedStudents,
-    setSelectedStudents,
-  } = useStudents()
+    minRating,
+    setMinRating,
+    maxRating,
+    setMaxRating,
+    isSubmitting,
+    setIsSubmitting,
+    isRunCountRating,
+    setCountRating,
+    removeRating,
+    setRemoveRating,
+    removeAllRating,
+    setRemoveAllRating,
+    maxPercent,
+    setMaxPercent,
+    currentPercent,
+    setCurrentPercent,
+  } = useAppStore()
+
+  const { ratingError, setRatingError, percentError, setPercentError } = useFormErrorStore()
+  const { selectedStudents, handleSelectedStudents } = useStudentsStore()
+
+  const isStudentTypeAll = useIsStudentTypeAll()
+  const isStudentTypeList = useIsStudentTypeList()
+  const isStudentTypeCustom = useIsStudentTypeCustom()
 
   const {
-    activeStudentList,
-    setActiveStudentList,
+    selectedStudentLists,
+    handleSelectedStudentLists,
     studentLists,
-    setStudentLists,
-    setSelectedStudentList,
     showModalStudentLists,
-    setShowModalStudentLists,
     showModalStudentListAdd,
     setShowModalStudentListAdd,
-  } = useStudentLists()
+    setShowModalStudentLists,
+    setStudentListType,
+  } = useStudentListsStore()
+
+  const { toast, setToast } = useToastStore()
 
   const {
     rows,
@@ -53,55 +79,19 @@ function App() {
     rating,
     ratingComment,
     studentName,
-    students,
-    fillPercent,
     toolPanel,
     cellRemoveSelected,
   } = useGradeBook()
 
   const { action, setAction, isSetRating, isDeleteRating, isCountRating } = useAction()
   const { isProcessing, setIsProcessing, processItem, isProcessingRef } = useProcessing()
-  const studentsList = useMemo(() => students(), [students])
+  const studentsList = useMemo(() => students(), [])
 
-  const [isRunCountRating, setCountRating] = useState<boolean>(false)
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
-  const [minRating, setMinRating] = useState<number>(0)
-  const [maxRating, setMaxRating] = useState<number>(0)
-  const [removeRating, setRemoveRating] = useState<number>(0)
-  const [removeAllRating, setRemoveAllRating] = useState<boolean>(false)
-  const [error, setError] = useState<string>('')
-  const [percentError, setPercentError] = useState<string>('')
-  const [maxPercent, setMaxPercent] = useState<number>(0)
-  const [currentPercent, setCurrentPercent] = useState<number>(0)
-  const [isToast, setToast] = useState<ToastType>('')
   const [showModal, setShowModal] = useState<boolean>(true)
-
-  useEffect(() => {
-    setCurrentPercent(fillPercent(selectedStudents))
-  }, [fillPercent, selectedStudents])
 
   useEffect(() => {
     isProcessingRef.current = isProcessing
   }, [isProcessing, isProcessingRef])
-
-  useEffect(() => {
-    switch (action) {
-      case 'set_rating':
-        setAction('set_rating')
-        break
-
-      case 'delete_rating':
-        setAction('delete_rating')
-        break
-
-      case 'count_rating':
-        setAction('count_rating')
-        break
-
-      default:
-        setAction('')
-    }
-  }, [action, setAction])
 
   const handleStop = (status: ToastType) => {
     setIsProcessing(false)
@@ -124,7 +114,7 @@ function App() {
 
     if (isProcessing) {
       setIsProcessing(false)
-      setToast('danger')
+      setToast('GeneralCancel')
       beep()
       destroy = TIMING.DESTROY_TOAST_APP_DELAY
     }
@@ -140,7 +130,7 @@ function App() {
 
     if (isSetRating) {
       if (minRating > maxRating) {
-        setError('Мінімальна оцінка не може бути більшою за максимальну')
+        setRatingError('Мінімальна оцінка не може бути більшою за максимальну')
         return
       }
 
@@ -154,7 +144,22 @@ function App() {
 
       const emptyCells: HTMLElement[] = []
 
-      if (selectedStudents) {
+      if (selectedStudentLists) {
+        console.info(selectedStudentLists)
+        /*for (const row of rows) {
+          if (selectedStudents.find((student) => student.value === studentName(row))) {
+            for (const cell of [...cellsNarrow(row)]) {
+              if (
+                ratingComment(cell as HTMLElement) &&
+                !cellAbsent(cell as HTMLElement) &&
+                !rating(cell as HTMLElement)
+              ) {
+                emptyCells.push(cell as HTMLElement)
+              }
+            }
+          }
+        }*/
+      } else if (selectedStudents) {
         for (const row of rows) {
           if (selectedStudents.find((student) => student.value === studentName(row))) {
             for (const cell of [...cellsNarrow(row)]) {
@@ -192,7 +197,7 @@ function App() {
         setCurrentPercent(percent)
 
         if (!isProcessingRef.current) {
-          handleStop('danger')
+          handleStop('GeneralCancel')
           return
         }
 
@@ -201,7 +206,7 @@ function App() {
         }
       }
 
-      handleStop('success')
+      handleStop('GeneralDone')
     }
 
     if (isDeleteRating) {
@@ -253,12 +258,12 @@ function App() {
         setCurrentPercent(fillPercent(selectedStudents))
 
         if (!isProcessingRef.current) {
-          handleStop('danger')
+          handleStop('GeneralCancel')
           return
         }
       }
 
-      handleStop('success')
+      handleStop('GeneralDone')
     }
 
     if (isCountRating) {
@@ -266,69 +271,24 @@ function App() {
     }
   }
 
-  const handleSelectedStudent = useCallback(
-    (selectedOption: MultiValue<unknown>) => {
-      setSelectedStudents(selectedOption as unknown as Student[])
-      setPercentError('')
-    },
-    [setSelectedStudents]
-  )
-
-  const handleSelectedStudentList = useCallback(
-    (selectedOption: MultiValue<unknown>) => {
-      setSelectedStudentList(selectedOption as unknown as StudentListOption[])
-      setPercentError('')
-    },
-    [setSelectedStudentList]
-  )
-
   if (showModalStudentLists) {
-    return (
-      <StudentLists
-        props={{
-          studentLists,
-          setStudentLists,
-          activeStudentList,
-          setActiveStudentList,
-          showModalStudentLists,
-          setShowModalStudentLists,
-          studentsList,
-          selectedStudents,
-          setSelectedStudents,
-          handleSelectedStudent,
-        }}
-      />
-    )
+    return <StudentLists />
   }
 
   if (showModalStudentListAdd) {
-    return (
-      <StudentListAdd
-        props={{
-          studentsList,
-          selectedStudents,
-          setSelectedStudents,
-          handleSelectedStudent,
-          studentLists,
-          setStudentLists,
-          showModalStudentListAdd,
-          setShowModalStudentListAdd,
-          setToast,
-        }}
-      />
-    )
+    return <StudentListAdd />
   }
 
-  if (isToast) {
+  if (toast) {
     return (
       <>
-        {isToast == 'success' && (
-          <Message show={!!isToast} type={isToast} onClose={() => setToast('')}>
+        {toast == 'GeneralDone' && (
+          <Message type="success" onClose={() => setToast(false)}>
             Операцію було успішно завершено!
           </Message>
         )}
-        {isToast == 'danger' && (
-          <Message show={!!isToast} type={isToast} onClose={() => setToast('')}>
+        {toast == 'GeneralCancel' && (
+          <Message type="danger" onClose={() => setToast(false)}>
             Операцію було скасовано!
           </Message>
         )}
@@ -392,8 +352,9 @@ function App() {
         </div>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="danger" onClick={() => handleStop('danger')}>
-          Зупинити
+        <Button variant="danger" onClick={() => handleStop('GeneralCancel')}>
+          <X width={16} height={16} />
+          <span className="align-middle ms-1">Зупинити</span>
         </Button>
       </Modal.Footer>
     </Modal>
@@ -511,7 +472,9 @@ function App() {
                                 value: studentList.id,
                                 label: `${studentList.name}`,
                               }))}
-                            onChange={(options) => handleSelectedStudentList(options)}
+                            onChange={(options) =>
+                              handleSelectedStudentLists(options as MultiValue<StudentList>)
+                            }
                             isMulti
                             required
                             closeMenuOnSelect
@@ -586,7 +549,7 @@ function App() {
                       className="mb-2"
                       placeholder="Оберіть учнів"
                       options={studentsList}
-                      onChange={(options) => handleSelectedStudent(options)}
+                      onChange={(options) => handleSelectedStudents(options as MultiValue<Student>)}
                       isMulti
                       required
                       closeMenuOnSelect={false}
@@ -612,13 +575,13 @@ function App() {
                         placeholder="Введіть мінімальну оцінку"
                         required
                         disabled={isSubmitting || (isStudentTypeList && studentLists.length === 0)}
-                        isInvalid={!!error}
+                        isInvalid={!!ratingError}
                         onChange={(e) => {
                           setMinRating(Number(e.target.value))
-                          setError('')
+                          setRatingError('')
                         }}
                       />
-                      <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
+                      <Form.Control.Feedback type="invalid">{ratingError}</Form.Control.Feedback>
                     </InputGroup>
                     <Form.Text>
                       <span className="fw-bold">Мінімальна оцінка</span>, яку бажаєте поставити,
@@ -639,13 +602,13 @@ function App() {
                         placeholder="Введіть максимальну оцінку"
                         required
                         disabled={isSubmitting || (isStudentTypeList && studentLists.length === 0)}
-                        isInvalid={!!error}
+                        isInvalid={!!ratingError}
                         onChange={(e) => {
                           setMaxRating(Number(e.target.value))
-                          setError('')
+                          setRatingError('')
                         }}
                       />
-                      <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
+                      <Form.Control.Feedback type="invalid">{ratingError}</Form.Control.Feedback>
                     </InputGroup>
                     <Form.Text>
                       <span className="fw-bold">Максимальна оцінка</span>, яку бажаєте поставити,
@@ -707,7 +670,7 @@ function App() {
                     className="mb-2"
                     placeholder="Оберіть учнів"
                     options={studentsList}
-                    onChange={(options) => handleSelectedStudent(options)}
+                    onChange={(options) => handleSelectedStudents(options as MultiValue<Student>)}
                     isMulti
                     closeMenuOnSelect={false}
                     components={animatedComponents}

@@ -4,69 +4,39 @@ import { Button, Card, Form, InputGroup, Modal } from 'react-bootstrap'
 import Select, { type MultiValue } from 'react-select'
 import makeAnimated from 'react-select/animated'
 
-import useGradeBook from '../../hooks/useGradeBook'
-import type { Student, StudentList, ToastType } from '../../types'
+import useFormErrorStore from '../../stores/useFormErrorStore'
+import { useStudentListsStore } from '../../stores/useStudentListsStore'
+import useStudentsStore from '../../stores/useStudentsStore'
+import useToastStore from '../../stores/useToastStore'
+import type { Student } from '../../types'
+import { className } from '../../utils/gradebook'
 
-function StudentListAdd({
-  props: {
-    studentsList,
-    selectedStudents,
-    setSelectedStudents,
-    handleSelectedStudent,
-    studentLists,
-    setStudentLists,
-    showModalStudentListAdd,
-    setShowModalStudentListAdd,
-    setToast,
-  },
-}: {
-  props: {
-    studentsList: Student[]
-    selectedStudents: Student[] | undefined
-    setSelectedStudents: (students: Student[]) => void
-    handleSelectedStudent: (selectedOption: MultiValue<unknown>) => void
-    studentLists: StudentList[]
-    setStudentLists: (studentLists: StudentList[]) => void
-    showModalStudentListAdd: boolean
-    setShowModalStudentListAdd: (status: boolean) => void
-    setToast: (toast: ToastType) => void
-  }
-}) {
+function StudentListAdd() {
   const animatedComponents = makeAnimated()
-  const { className } = useGradeBook()
-
-  const [error, setError] = useState<string>('')
+  const { showModalStudentListAdd, setShowModalStudentListAdd, setStudentListId, addStudentList } =
+    useStudentListsStore()
+  const { studentsList, selectedStudents, handleSelectedStudents } = useStudentsStore()
+  const { nameError, setNameError } = useFormErrorStore()
+  const { setToast } = useToastStore()
   const [name, setName] = useState<string>('')
+  const nameClass = className()
 
   const handleClose = () => {
-    setSelectedStudents([])
+    setStudentListId('')
     setShowModalStudentListAdd(false)
   }
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    if (studentLists.find((list) => list.name === name)) {
-      setError('Список з такою назвою вже існує')
+    const success = await addStudentList(name, selectedStudents)
+
+    if (!success) {
+      setNameError('Список з такою назвою вже існує')
       return
     }
 
-    const updatedLists = [
-      ...studentLists,
-      {
-        name,
-        className,
-        id: crypto.randomUUID(),
-        students: selectedStudents || [],
-      },
-    ]
-
-    await chrome.storage.local.set({
-      humanAutomator: { studentLists: updatedLists },
-    })
-
-    setStudentLists(updatedLists)
-    setToast('studentListAdd')
+    setToast('StudentListAdd')
 
     handleClose()
   }
@@ -75,7 +45,7 @@ function StudentListAdd({
     <Modal show={showModalStudentListAdd} onHide={handleClose} animation centered>
       <Form onSubmit={handleSubmit}>
         <Modal.Header className="justify-content-center" closeButton>
-          <Modal.Title as="h5">Створювання нового списку учнів {className}</Modal.Title>
+          <Modal.Title as="h5">Створювання нового списку учнів {nameClass}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Card>
@@ -85,15 +55,15 @@ function StudentListAdd({
                 <Form.Control
                   type="input"
                   value={name}
-                  isInvalid={!!error}
+                  isInvalid={!!nameError}
                   placeholder="Введіть назву списку"
                   onChange={(e) => {
                     setName(e.target.value)
-                    setError('')
+                    setNameError('')
                   }}
                   required
                 />
-                <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
+                <Form.Control.Feedback type="invalid">{nameError}</Form.Control.Feedback>
               </InputGroup>
               <Form.Text>
                 <span className="fw-bold">Оберіть назву</span> для цього списку, наприклад,
@@ -108,7 +78,7 @@ function StudentListAdd({
                 className="mb-2"
                 placeholder="Оберіть учнів"
                 options={studentsList}
-                onChange={(options) => handleSelectedStudent(options)}
+                onChange={(options) => handleSelectedStudents(options as MultiValue<Student>)}
                 isMulti
                 required
                 closeMenuOnSelect={false}

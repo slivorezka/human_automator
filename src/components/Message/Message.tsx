@@ -5,18 +5,16 @@ import type { Variant } from 'react-bootstrap/types'
 
 function Message({
   children,
-  show,
   type,
   onClose,
 }: {
   children?: ReactNode
-  show: boolean
   type: Variant
   onClose: () => void
 }) {
   return (
     <ToastContainer position="top-end" className="p-3">
-      <Toast onClose={onClose} show={show} delay={3000} autohide bg={type}>
+      <Toast onClose={onClose} show delay={3000} autohide bg={type}>
         <Toast.Header className="text-white justify-content-center" closeButton>
           <strong className="d-flex align-items-center gap-1">
             <Bot /> Human Automator

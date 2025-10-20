@@ -1,79 +1,53 @@
-import { Check,X } from 'lucide-react'
+import { Check, X } from 'lucide-react'
 import { type FormEvent, useState } from 'react'
-import { Button, Card, Form, InputGroup,Modal } from 'react-bootstrap'
-import Select, { type MultiValue } from 'react-select'
+import { Button, Card, Form, InputGroup, Modal } from 'react-bootstrap'
+import Select from 'react-select'
 import makeAnimated from 'react-select/animated'
 
-import type { Student, StudentList, ToastType } from '../../types'
+import useFormErrorStore from '../../stores/useFormErrorStore'
+import { useStudentListsStore } from '../../stores/useStudentListsStore'
+import useStudentsStore from '../../stores/useStudentsStore'
+import useToastStore from '../../stores/useToastStore'
 
-function StudentListEdit({
-  props: {
-    studentsList,
-    selectedStudents,
-    handleSelectedStudent,
-    studentLists,
-    setStudentLists,
-    activeStudentList,
-    setActiveStudentList,
+function StudentListEdit() {
+  const animatedComponents = makeAnimated()
+
+  const {
+    studentListId,
     showModalStudentListEdit,
     setShowModalStudentListEdit,
-    setToast,
-  },
-}: {
-  props: {
-    studentsList: Student[]
-    selectedStudents: Student[] | undefined
-    handleSelectedStudent: (selectedOption: MultiValue<unknown>) => void
-    studentLists: StudentList[]
-    setStudentLists: (studentLists: StudentList[]) => void
-    activeStudentList: string
-    setActiveStudentList: (name: string) => void
-    showModalStudentListEdit: boolean
-    setShowModalStudentListEdit: (status: boolean) => void
-    setToast: (toast: ToastType) => void
-  }
-}) {
-  const animatedComponents = makeAnimated()
-  const studentList = studentLists.find((list) => list.id === activeStudentList)
+    setStudentListId,
+    getStudentListById,
+    updateStudentList,
+    isListNameExists,
+  } = useStudentListsStore()
+  const { studentsList, selectedStudents, handleSelectedStudents } = useStudentsStore()
+  const { nameError, setNameError } = useFormErrorStore()
+  const { setToast } = useToastStore()
+
+  const studentList = getStudentListById(studentListId)
 
   if (!studentList) {
     throw new Error('Student list not found')
   }
 
-  const [error, setError] = useState<string>('')
   const [name, setName] = useState<string>(studentList?.name || '')
 
   const handleClose = () => {
-    setActiveStudentList('')
+    setStudentListId('')
     setShowModalStudentListEdit(false)
   }
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    if (
-      studentLists.find((list) => list.name === activeStudentList && list.id !== activeStudentList)
-    ) {
-      setError('Список з такою назвою вже існує')
+    if (isListNameExists(name) && studentList.id !== studentListId) {
+      setNameError('Список з такою назвою вже існує')
       return
     }
 
-    const updatedStudentLists = [
-      ...(studentLists.filter((list: StudentList) => !(list.id === activeStudentList)) || {}),
-      {
-        ...studentList,
-        name,
-        students: selectedStudents || [],
-      },
-    ]
-
-    await chrome.storage.local.set({
-      humanAutomator: { studentLists: updatedStudentLists },
-    })
-
-    setStudentLists(updatedStudentLists)
-    setToast('studentListSave')
-
+    await updateStudentList(studentListId, name, selectedStudents)
+    setToast('StudentListSave')
     handleClose()
   }
 
@@ -91,15 +65,15 @@ function StudentListEdit({
                 <Form.Control
                   type="input"
                   value={name}
-                  isInvalid={!!error}
+                  isInvalid={!!nameError}
                   placeholder="Введіть назву списку"
                   onChange={(e) => {
                     setName(e.target.value)
-                    setError('')
+                    setNameError('')
                   }}
                   required
                 />
-                <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
+                <Form.Control.Feedback type="invalid">{nameError}</Form.Control.Feedback>
               </InputGroup>
               <Form.Text>
                 <span className="fw-bold">Оберіть назву</span> для цього списку, наприклад,
@@ -115,7 +89,7 @@ function StudentListEdit({
                 placeholder="Оберіть учнів"
                 defaultValue={studentList?.students || []}
                 options={studentsList}
-                onChange={(options) => handleSelectedStudent(options)}
+                onChange={(options) => handleSelectedStudents(options)}
                 isMulti
                 required
                 closeMenuOnSelect={false}
