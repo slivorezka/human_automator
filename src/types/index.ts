@@ -15,8 +15,8 @@ export interface StudentListOption {
   label: string
 }
 
-export type Action = 'set_rating' | 'delete_rating' | 'count_rating' | ''
-export type StudentListType = 'list' | 'custom' | 'all'
+export type Action = false | 'set_rating' | 'delete_rating' | 'count_rating'
+export type StudentSelectType = 'list' | 'custom' | 'all'
 export type ToastType =
   | false
   | 'GeneralDone'

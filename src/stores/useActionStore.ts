@@ -12,7 +12,7 @@ const useActionStore = create<{
   setShowActionModal: (value: boolean) => void
   reset: () => void
 }>((set) => ({
-  action: '',
+  action: false,
   isSetRating: false,
   isDeleteRating: false,
   isCountRating: false,
@@ -27,7 +27,7 @@ const useActionStore = create<{
   setShowActionModal: (value) => set({ showActionModal: value }),
   reset: () =>
     set({
-      action: '',
+      action: false,
       isSetRating: false,
       isDeleteRating: false,
       isCountRating: false,

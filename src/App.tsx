@@ -38,7 +38,6 @@ import {
 
 function App() {
   const animatedComponents = makeAnimated()
-  const appStore = useAppStore.getState()
 
   const {
     setProcessing,
@@ -64,9 +63,9 @@ function App() {
   const { studentsList, selectedStudents, handleSelectedStudents } = useStudentsStore()
 
   const {
-    isStudentTypeListAll,
-    isStudentTypeList,
-    isStudentTypeCustom,
+    isStudentSelectTypeAll,
+    isStudentSelectTypeList,
+    isStudentSelectTypeCustom,
     selectedStudentLists,
     handleSelectedStudentLists,
     studentLists,
@@ -74,7 +73,7 @@ function App() {
     showModalStudentListAdd,
     setShowModalStudentListAdd,
     setShowModalStudentLists,
-    setStudentListType,
+    setStudentSelectType,
   } = useStudentListsStore()
 
   const { toast, setToast } = useToastStore()
@@ -109,7 +108,7 @@ function App() {
     setShowActionModal(false)
     let destroy = TIMING.DESTROY_APP_DELAY
 
-    if (appStore.isProcessing) {
+    if (useAppStore.getState().isProcessing) {
       setProcessing(false)
       setToast('GeneralCancel')
       beep()
@@ -193,7 +192,7 @@ function App() {
 
         setCurrentPercent(percent)
 
-        if (!appStore.isProcessing) {
+        if (!useAppStore.getState().isProcessing) {
           handleStop('GeneralCancel')
           return
         }
@@ -254,7 +253,7 @@ function App() {
 
         setCurrentPercent(fillPercent(selectedStudents))
 
-        if (!appStore.isProcessing) {
+        if (!useAppStore.getState().isProcessing) {
           handleStop('GeneralCancel')
           return
         }
@@ -366,21 +365,21 @@ function App() {
               <Form.Check
                 type="switch"
                 label="Проставити учням оцінки"
-                onChange={(e) => (e.target.checked ? setAction('set_rating') : setAction(''))}
+                onChange={(e) => (e.target.checked ? setAction('set_rating') : setAction(false))}
                 checked={isSetRating}
                 disabled={isSubmitting}
               />
               <Form.Check
                 type="switch"
                 label="Видалити учням оцінки"
-                onChange={(e) => (e.target.checked ? setAction('delete_rating') : setAction(''))}
+                onChange={(e) => (e.target.checked ? setAction('delete_rating') : setAction(false))}
                 checked={isDeleteRating}
                 disabled={isSubmitting}
               />
               <Form.Check
                 type="switch"
                 label="Показати яких і скільки оцінок"
-                onChange={(e) => (e.target.checked ? setAction('count_rating') : setAction(''))}
+                onChange={(e) => (e.target.checked ? setAction('count_rating') : setAction(false))}
                 checked={isCountRating}
                 disabled={isSubmitting}
               />
@@ -408,28 +407,28 @@ function App() {
                   <Form.Check
                     type="switch"
                     label="Обрати всіх учнів"
-                    onChange={(e) =>
-                      e.target.checked ? setStudentListType('all') : setStudentListType('all')
-                    }
-                    checked={isStudentTypeListAll}
+                    onChange={() => setStudentSelectType('all')}
+                    checked={isStudentSelectTypeAll}
                     disabled={isSubmitting}
                   />
                   <Form.Check
                     type="switch"
                     label="Використати список учнів"
                     onChange={(e) =>
-                      e.target.checked ? setStudentListType('list') : setStudentListType('all')
+                      e.target.checked ? setStudentSelectType('list') : setStudentSelectType('all')
                     }
-                    checked={isStudentTypeList}
+                    checked={isStudentSelectTypeList}
                     disabled={isSubmitting}
                   />
                   <Form.Check
                     type="switch"
                     label="Обрати учнів зі списку"
                     onChange={(e) =>
-                      e.target.checked ? setStudentListType('custom') : setStudentListType('all')
+                      e.target.checked
+                        ? setStudentSelectType('custom')
+                        : setStudentSelectType('all')
                     }
-                    checked={isStudentTypeCustom}
+                    checked={isStudentSelectTypeCustom}
                     disabled={isSubmitting}
                   />
                   <Form.Text>
@@ -452,7 +451,7 @@ function App() {
                 </Card.Body>
               </Card>
 
-              {isStudentTypeList && (
+              {isStudentSelectTypeList && (
                 <>
                   {studentLists?.length > 0 ? (
                     <>
@@ -538,7 +537,7 @@ function App() {
                 </>
               )}
 
-              {isStudentTypeCustom && (
+              {isStudentSelectTypeCustom && (
                 <Card className="mt-3">
                   <Card.Body>
                     <Form.Label className="fw-bold">Оберіть учнів</Form.Label>
@@ -571,7 +570,9 @@ function App() {
                         max={MAX_RATING}
                         placeholder="Введіть мінімальну оцінку"
                         required
-                        disabled={isSubmitting || (isStudentTypeList && studentLists.length === 0)}
+                        disabled={
+                          isSubmitting || (isStudentSelectTypeList && studentLists.length === 0)
+                        }
                         isInvalid={!!ratingError}
                         onChange={(e) => {
                           setMinRating(Number(e.target.value))
@@ -598,7 +599,9 @@ function App() {
                         max={MAX_RATING}
                         placeholder="Введіть максимальну оцінку"
                         required
-                        disabled={isSubmitting || (isStudentTypeList && studentLists.length === 0)}
+                        disabled={
+                          isSubmitting || (isStudentSelectTypeList && studentLists.length === 0)
+                        }
                         isInvalid={!!ratingError}
                         onChange={(e) => {
                           setMaxRating(Number(e.target.value))
@@ -626,7 +629,9 @@ function App() {
                         placeholder="Введіть максимальний відсоток заповнення"
                         required
                         key={currentPercent}
-                        disabled={isSubmitting || (isStudentTypeList && studentLists.length === 0)}
+                        disabled={
+                          isSubmitting || (isStudentSelectTypeList && studentLists.length === 0)
+                        }
                         isInvalid={!!percentError}
                         defaultValue={currentPercent}
                         onChange={(e) => {
@@ -770,7 +775,7 @@ function App() {
           </Button>
           <Button
             disabled={
-              action === '' || isSubmitting || (isStudentTypeList && studentLists.length === 0)
+              !action || isSubmitting || (isStudentSelectTypeList && studentLists.length === 0)
             }
             variant="primary"
             type="submit"

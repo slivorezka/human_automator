@@ -15,11 +15,9 @@ const useProcessing = () => {
     maxRating?: number
     remove?: boolean
   }): Promise<void> => {
-    const appStore = useAppStore.getState()
-
     return new Promise<void>((resolve) => {
       setTimeout(() => {
-        if (!appStore.isProcessing) {
+        if (!useAppStore.getState().isProcessing) {
           resolve()
           return
         }
@@ -34,7 +32,7 @@ const useProcessing = () => {
         })
 
         setTimeout(() => {
-          if (!appStore.isProcessing) {
+          if (!useAppStore.getState().isProcessing) {
             resolve()
             return
           }
@@ -54,7 +52,7 @@ const useProcessing = () => {
           inputMarkGroup.dispatchEvent(new Event('input', { bubbles: true }))
 
           setTimeout(() => {
-            if (!appStore.isProcessing) {
+            if (!useAppStore.getState().isProcessing) {
               resolve()
               return
             }
