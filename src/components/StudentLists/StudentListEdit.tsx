@@ -1,13 +1,15 @@
 import { Check, X } from 'lucide-react'
 import { type FormEvent, useState } from 'react'
 import { Button, Card, Form, InputGroup, Modal } from 'react-bootstrap'
-import Select from 'react-select'
+import Select, { type MultiValue } from 'react-select'
 import makeAnimated from 'react-select/animated'
 
 import useFormErrorStore from '../../stores/useFormErrorStore'
 import useStudentListsStore from '../../stores/useStudentListsStore'
 import useStudentsStore from '../../stores/useStudentsStore'
 import useToastStore from '../../stores/useToastStore'
+import type { SelectOption } from '../../types'
+import { getSelectOption } from '../../utils/helper'
 
 function StudentListEdit() {
   const animatedComponents = makeAnimated()
@@ -87,9 +89,9 @@ function StudentListEdit() {
               <Select
                 className="mb-2"
                 placeholder="Оберіть учнів"
-                defaultValue={studentList?.students || []}
-                options={studentsList}
-                onChange={(options) => handleSelectedStudents(options)}
+                defaultValue={getSelectOption(studentList.students)}
+                options={getSelectOption(studentsList)}
+                onChange={(options) => handleSelectedStudents(options as MultiValue<SelectOption>)}
                 isMulti
                 required
                 closeMenuOnSelect={false}

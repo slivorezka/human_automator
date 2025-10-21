@@ -1,32 +1,3 @@
-import type { Student } from '../types'
-
-export const getRandomInt = (min: number, max: number) => {
-  min = Math.ceil(min)
-  max = Math.floor(max)
-
-  return Math.floor(Math.random() * (max - min + 1)) + min
-}
-
-export const shuffleArray = <T>(array: T[]): T[] => {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[array[i], array[j]] = [array[j], array[i]]
-  }
-
-  return array
-}
-
-export const beep = () => {
-  const audioCtx = new window.AudioContext()
-  const oscillator = audioCtx.createOscillator()
-
-  oscillator.type = 'sine'
-  oscillator.frequency.setValueAtTime(600, audioCtx.currentTime)
-  oscillator.connect(audioCtx.destination)
-  oscillator.start()
-  oscillator.stop(audioCtx.currentTime + 0.2)
-}
-
 export const getRows = (): HTMLElement[] => [
   ...(document.querySelectorAll(
     '.gradebook-container__table2-outlet .gradebook-container__table2-row'
@@ -67,28 +38,17 @@ export const studentName = (row: HTMLElement): string => {
   return (row.querySelector('.bem-user__name') as HTMLElement).innerText.trim()
 }
 
-export const students = (): Student[] => {
-  const students: Student[] = []
-
-  for (const row of getRows()) {
-    const name = studentName(row)
-
-    students.push({
-      value: name,
-      label: name,
-    })
-  }
-
-  return students
+export const students = (): string[] => {
+  return getRows().map((row) => studentName(row))
 }
 
-export const fillPercent = (students?: Student[]): number => {
+export const fillPercent = (students?: string[]): number => {
   const filedCells = []
   const emptyCells = []
 
   if (students && students.length > 0) {
     for (const row of getRows()) {
-      if (students.find((student) => student.value === studentName(row))) {
+      if (students.find((student) => student === studentName(row))) {
         for (const cell of [...cellsNarrow(row)]) {
           if (
             ratingComment(cell as HTMLElement) &&

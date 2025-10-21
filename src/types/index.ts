@@ -1,4 +1,4 @@
-export interface Student {
+export interface SelectOption {
   value: string
   label: string
 }
@@ -7,12 +7,7 @@ export interface StudentList {
   id: string
   className: string
   name: string
-  students: Student[]
-}
-
-export interface StudentListOption {
-  value: string
-  label: string
+  students: string[]
 }
 
 export type Action = false | 'set_rating' | 'delete_rating' | 'count_rating'

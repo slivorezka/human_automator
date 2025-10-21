@@ -8,8 +8,9 @@ import useFormErrorStore from '../../stores/useFormErrorStore'
 import useStudentListsStore from '../../stores/useStudentListsStore'
 import useStudentsStore from '../../stores/useStudentsStore'
 import useToastStore from '../../stores/useToastStore'
-import type { Student } from '../../types'
+import type { SelectOption } from '../../types'
 import { className } from '../../utils/gradebook'
+import { getSelectOption } from '../../utils/helper.ts'
 
 function StudentListAdd() {
   const animatedComponents = makeAnimated()
@@ -76,8 +77,8 @@ function StudentListAdd() {
               <Select
                 className="mb-2"
                 placeholder="Оберіть учнів"
-                options={studentsList}
-                onChange={(options) => handleSelectedStudents(options as MultiValue<Student>)}
+                options={getSelectOption(studentsList)}
+                onChange={(options) => handleSelectedStudents(options as MultiValue<SelectOption>)}
                 isMulti
                 required
                 closeMenuOnSelect={false}

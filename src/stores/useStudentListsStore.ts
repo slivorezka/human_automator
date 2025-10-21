@@ -1,7 +1,7 @@
 import type { MultiValue } from 'react-select'
 import { create } from 'zustand'
 
-import type { Student, StudentList, StudentSelectType } from '../types'
+import type { SelectOption, StudentList, StudentSelectType } from '../types'
 import { className } from '../utils/gradebook'
 import useFormErrorStore from './useFormErrorStore'
 import useStudentsStore from './useStudentsStore'
@@ -19,7 +19,7 @@ const useStudentListsStore = create<{
   showModalStudentListEdit: boolean
   showModalStudentListRemove: boolean
   setStudentSelectType: (studentSelectType: StudentSelectType) => void
-  handleSelectedStudentLists: (studentLists: MultiValue<StudentList>) => void
+  handleSelectedStudentLists: (studentLists: MultiValue<SelectOption>) => void
   setStudentLists: (studentLists: StudentList[]) => void
   setStudentListId: (id: string) => void
   loadStudentLists: () => Promise<void>
@@ -28,8 +28,8 @@ const useStudentListsStore = create<{
   setShowModalStudentListEdit: (value: boolean) => void
   setShowModalStudentListRemove: (value: boolean) => void
   getStudentListById: (id: string) => StudentList | undefined
-  addStudentList: (name: string, students: Student[]) => Promise<boolean>
-  updateStudentList: (id: string, name: string, students: Student[]) => Promise<void>
+  addStudentList: (name: string, students: string[]) => Promise<boolean>
+  updateStudentList: (id: string, name: string, students: string[]) => Promise<void>
   removeStudentList: (id: string) => Promise<void>
   isListNameExists: (name: string) => boolean
   reset: () => void
@@ -50,9 +50,13 @@ const useStudentListsStore = create<{
       const result = await chrome.storage.local.get('humanAutomator')
       set({ studentLists: result.humanAutomator?.studentLists || [] })
     },
-    handleSelectedStudentLists: (studentLists: MultiValue<StudentList>) => {
-      set({ selectedStudentLists: studentLists as StudentList[] })
-      get().setStudentLists(studentLists as StudentList[])
+    handleSelectedStudentLists: (studentListsOption: MultiValue<SelectOption>) => {
+      const selected = studentListsOption
+        .map((option) => get().getStudentListById(option.value))
+        .filter((s): s is StudentList => Boolean(s))
+
+      set({ selectedStudentLists: selected })
+      get().setStudentLists(selected)
       useFormErrorStore.getState().setPercentError('')
     },
     setStudentLists: (lists) => set({ studentLists: lists }),

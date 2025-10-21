@@ -20,9 +20,8 @@ import useFormErrorStore from './stores/useFormErrorStore'
 import useStudentListsStore from './stores/useStudentListsStore'
 import useStudentsStore from './stores/useStudentsStore'
 import useToastStore from './stores/useToastStore'
-import type { Student, StudentList, ToastType } from './types'
+import type { SelectOption, ToastType } from './types'
 import {
-  beep,
   cellAbsent,
   cellRemoveSelected,
   cellsNarrow,
@@ -31,10 +30,10 @@ import {
   getRows,
   rating,
   ratingComment,
-  shuffleArray,
   studentName,
   toolPanel,
 } from './utils/gradebook'
+import { beep, getSelectListOption, getSelectOption, shuffleArray } from './utils/helper'
 
 function App() {
   const animatedComponents = makeAnimated()
@@ -157,7 +156,7 @@ function App() {
         }*/
       } else if (selectedStudents) {
         for (const row of getRows()) {
-          if (selectedStudents.find((student) => student.value === studentName(row))) {
+          if (selectedStudents.find((student) => student === studentName(row))) {
             for (const cell of [...cellsNarrow(row)]) {
               if (
                 ratingComment(cell as HTMLElement) &&
@@ -235,7 +234,7 @@ function App() {
 
       if (selectedStudents) {
         for (const row of getRows()) {
-          if (selectedStudents.find((student) => student.value === studentName(row))) {
+          if (selectedStudents.find((student) => student === studentName(row))) {
             processRow(row)
           }
         }
@@ -461,15 +460,9 @@ function App() {
                           <Select
                             className="mb-2"
                             placeholder="Оберіть список учнів"
-                            options={studentLists
-                              .slice()
-                              .sort((a, b) => a.name.localeCompare(b.name))
-                              .map((studentList) => ({
-                                value: studentList.id,
-                                label: `${studentList.name}`,
-                              }))}
+                            options={getSelectListOption(studentLists)}
                             onChange={(options) =>
-                              handleSelectedStudentLists(options as MultiValue<StudentList>)
+                              handleSelectedStudentLists(options as MultiValue<SelectOption>)
                             }
                             isMulti
                             required
@@ -544,8 +537,10 @@ function App() {
                     <Select
                       className="mb-2"
                       placeholder="Оберіть учнів"
-                      options={studentsList}
-                      onChange={(options) => handleSelectedStudents(options as MultiValue<Student>)}
+                      options={getSelectOption(studentsList)}
+                      onChange={(options) =>
+                        handleSelectedStudents(options as MultiValue<SelectOption>)
+                      }
                       isMulti
                       required
                       closeMenuOnSelect={false}
@@ -671,8 +666,10 @@ function App() {
                   <Select
                     className="mb-2"
                     placeholder="Оберіть учнів"
-                    options={studentsList}
-                    onChange={(options) => handleSelectedStudents(options as MultiValue<Student>)}
+                    options={getSelectListOption(studentLists)}
+                    onChange={(options) =>
+                      handleSelectedStudents(options as MultiValue<SelectOption>)
+                    }
                     isMulti
                     closeMenuOnSelect={false}
                     components={animatedComponents}
