@@ -42,12 +42,12 @@ function App() {
   const animatedComponents = makeAnimated()
 
   const {
-    showModalAction,
+    showModalBasic,
     showModalStudentLists,
     showModalStudentListAdd,
     showModalStudentListEdit,
     showModalStudentListDelete,
-    setShowActionModal,
+    setShowModalBasic,
     setShowModalStudentLists,
     setShowModalStudentListAdd,
   } = useModalStoreStore()
@@ -94,7 +94,7 @@ function App() {
     setProcessing(false)
     toolPanel(false)
     cellRemoveSelected(false)
-    setShowActionModal(false)
+    setShowModalBasic(false)
     setToast(status)
     beep()
     setTimeout(
@@ -106,7 +106,7 @@ function App() {
   const handleClose = () => {
     toolPanel(false)
     cellRemoveSelected(false)
-    setShowActionModal(false)
+    setShowModalBasic(false)
     let destroy = TIMING.DESTROY_APP_DELAY
 
     if (useAppStore.getState().isProcessing) {
@@ -302,7 +302,7 @@ function App() {
       {showModalStudentLists && <StudentLists />}
 
       {isRunCountRating && (
-        <Modal show={showModalAction} onHide={handleClose} centered>
+        <Modal show={showModalBasic} onHide={handleClose} centered>
           <Header />
           <Modal.Body>
             <Card>
@@ -321,7 +321,7 @@ function App() {
       )}
 
       {useAppStore.getState().isProcessing ? (
-        <Modal show={showModalAction} onHide={handleClose} centered>
+        <Modal show={showModalBasic} onHide={handleClose} centered>
           <Header />
           <Modal.Body>
             <ProgressBar
@@ -362,7 +362,7 @@ function App() {
           </Modal.Footer>
         </Modal>
       ) : (
-        <Modal show={showModalAction} onHide={handleClose} centered animation>
+        <Modal show={showModalBasic} onHide={handleClose} centered animation>
           <Form onSubmit={handleSubmit}>
             <Header />
             <Modal.Body>

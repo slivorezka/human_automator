@@ -6,7 +6,8 @@ import useStudentListsStore from '../../stores/useStudentListsStore'
 import useToastStore from '../../stores/useToastStore'
 
 function StudentListDelete() {
-  const { showModalStudentListDelete, setShowModalStudentListDelete } = useModalStoreStore()
+  const { setShowModalStudentLists, showModalStudentListDelete, setShowModalStudentListDelete } =
+    useModalStoreStore()
   const {
     studentListId,
     getStudentListById,
@@ -24,6 +25,7 @@ function StudentListDelete() {
   const handleClose = () => {
     setStudentListId('')
     setShowModalStudentListDelete(false)
+    setShowModalStudentLists(true)
   }
 
   const handleConfirm = async () => {

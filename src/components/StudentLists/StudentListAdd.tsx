@@ -15,7 +15,8 @@ import { getSelectOption } from '../../utils/helper'
 
 function StudentListAdd() {
   const animatedComponents = makeAnimated()
-  const { showModalStudentListAdd, setShowModalStudentListAdd } = useModalStoreStore()
+  const { setShowModalStudentLists, showModalStudentListAdd, setShowModalStudentListAdd } =
+    useModalStoreStore()
   const { setStudentListId, addStudentList, setSelectedStudentLists } = useStudentListsStore()
   const { studentsList, selectedStudents, handleSelectedStudents } = useStudentsStore()
   const { nameError, setNameError } = useFormErrorStore()
@@ -26,6 +27,7 @@ function StudentListAdd() {
   const handleClose = () => {
     setStudentListId('')
     setShowModalStudentListAdd(false)
+    setShowModalStudentLists(true)
   }
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {

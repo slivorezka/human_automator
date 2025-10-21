@@ -8,6 +8,7 @@ import { className } from '../../utils/gradebook'
 
 function StudentLists() {
   const {
+    setShowModalBasic,
     showModalStudentLists,
     setShowModalStudentLists,
     setShowModalStudentListAdd,
@@ -20,7 +21,10 @@ function StudentLists() {
     setStudentListId,
   } = useStudentListsStore()
 
-  const handleClose = () => setShowModalStudentLists(false)
+  const handleClose = () => {
+    setShowModalStudentLists(false)
+    setShowModalBasic(true)
+  }
 
   const handleAdd = () => {
     setStudentListId('')

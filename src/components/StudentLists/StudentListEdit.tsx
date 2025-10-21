@@ -14,7 +14,8 @@ import { getSelectOption } from '../../utils/helper'
 
 function StudentListEdit() {
   const animatedComponents = makeAnimated()
-  const { showModalStudentListEdit, setShowModalStudentListEdit } = useModalStoreStore()
+  const { setShowModalStudentLists, showModalStudentListEdit, setShowModalStudentListEdit } =
+    useModalStoreStore()
   const {
     studentListId,
     setStudentListId,
@@ -38,6 +39,7 @@ function StudentListEdit() {
   const handleClose = () => {
     setStudentListId('')
     setShowModalStudentListEdit(false)
+    setShowModalStudentLists(true)
   }
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
