@@ -91,35 +91,32 @@ function StudentLists() {
                 </tr>
               </thead>
               <tbody>
-                {studentLists
-                  .slice()
-                  .sort((a, b) => a.name.localeCompare(b.name))
-                  .map((studentList) => (
-                    <tr>
-                      <td className="fw-bold">{studentList.name}</td>
-                      <td className="text-center fw-bold">{studentList.students.length}</td>
-                      <td className="align-middle">
-                        <div className="d-flex justify-content-center gap-3">
-                          <Button
-                            className="pt-0"
-                            size="sm"
-                            variant="outline-primary"
-                            onClick={() => handleEdit(studentList)}
-                          >
-                            <Pencil size={12} />
-                          </Button>
-                          <Button
-                            className="pt-0"
-                            size="sm"
-                            variant="outline-danger"
-                            onClick={() => handleRemove(studentList)}
-                          >
-                            <Trash2 size={12} />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                {studentLists.map((studentList) => (
+                  <tr>
+                    <td className="fw-bold">{studentList.name}</td>
+                    <td className="text-center fw-bold">{studentList.students.length}</td>
+                    <td className="align-middle">
+                      <div className="d-flex justify-content-center gap-3">
+                        <Button
+                          className="pt-0"
+                          size="sm"
+                          variant="outline-primary"
+                          onClick={() => handleEdit(studentList)}
+                        >
+                          <Pencil size={12} />
+                        </Button>
+                        <Button
+                          className="pt-0"
+                          size="sm"
+                          variant="outline-danger"
+                          onClick={() => handleRemove(studentList)}
+                        >
+                          <Trash2 size={12} />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </Table>
           ) : (

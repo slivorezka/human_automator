@@ -24,7 +24,6 @@ const useStudentsStore = create<{
   handleSelectedStudents: (studentOption: MultiValue<SelectOption>) => {
     const students = studentOption.map((option) => option.value)
 
-    set({ selectedStudents: students })
     get().setSelectedStudents(students)
     useFormErrorStore.getState().setPercentError('')
   },

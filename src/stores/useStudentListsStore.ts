@@ -2,7 +2,8 @@ import type { MultiValue } from 'react-select'
 import { create } from 'zustand'
 
 import type { SelectOption, StudentList, StudentSelectType } from '../types'
-import { className } from '../utils/gradebook'
+import { className, fillPercent } from '../utils/gradebook'
+import useAppStore from './useAppStore'
 import useFormErrorStore from './useFormErrorStore'
 import useStudentsStore from './useStudentsStore'
 
@@ -27,6 +28,7 @@ const useStudentListsStore = create<{
   setShowModalStudentListAdd: (value: boolean) => void
   setShowModalStudentListEdit: (value: boolean) => void
   setShowModalStudentListRemove: (value: boolean) => void
+  setSelectedStudentLists: (studentLists: StudentList[]) => void
   getStudentListById: (id: string) => StudentList | undefined
   addStudentList: (name: string, students: string[]) => Promise<boolean>
   updateStudentList: (id: string, name: string, students: string[]) => Promise<void>
@@ -48,23 +50,31 @@ const useStudentListsStore = create<{
     showModalStudentListRemove: false,
     loadStudentLists: async () => {
       const result = await chrome.storage.local.get('humanAutomator')
-      set({ studentLists: result.humanAutomator?.studentLists || [] })
+      get().setStudentLists(result.humanAutomator?.studentLists || [])
     },
     handleSelectedStudentLists: (studentListsOption: MultiValue<SelectOption>) => {
-      const selected = studentListsOption
-        .map((option) => get().getStudentListById(option.value))
-        .filter((s): s is StudentList => Boolean(s))
+      get().setSelectedStudentLists(
+        studentListsOption
+          .map((option) => get().getStudentListById(option.value))
+          .filter((s): s is StudentList => Boolean(s))
+      )
 
-      set({ selectedStudentLists: selected })
-      get().setStudentLists(selected)
       useFormErrorStore.getState().setPercentError('')
     },
-    setStudentLists: (lists) => set({ studentLists: lists }),
+    setStudentLists: (studentLists) => {
+      set({ studentLists: [...studentLists].sort((a, b) => a.name.localeCompare(b.name)) })
+    },
     setStudentListId: (id) => set({ studentListId: id }),
     setShowModalStudentLists: (value) => set({ showModalStudentLists: value }),
     setShowModalStudentListAdd: (value) => set({ showModalStudentListAdd: value }),
     setShowModalStudentListEdit: (value) => set({ showModalStudentListEdit: value }),
     setShowModalStudentListRemove: (value) => set({ showModalStudentListRemove: value }),
+    setSelectedStudentLists: (studentLists) => {
+      set({ selectedStudentLists: studentLists })
+      useAppStore
+        .getState()
+        .setCurrentPercent(fillPercent(studentLists.flatMap((studentList) => studentList.students)))
+    },
     getStudentListById: (id) => {
       return get().studentLists.find((list) => list.id === id)
     },
@@ -87,7 +97,8 @@ const useStudentListsStore = create<{
         humanAutomator: { studentLists: updatedLists },
       })
 
-      set({ studentLists: updatedLists })
+      get().setStudentLists(updatedLists)
+
       return true
     },
     updateStudentList: async (id, name, students) => {
@@ -107,7 +118,7 @@ const useStudentListsStore = create<{
           humanAutomator: { studentLists: updatedStudentLists },
         })
 
-        set({ studentLists: updatedStudentLists })
+        get().setStudentLists(updatedStudentLists)
       }
     },
     removeStudentList: async (id) => {
@@ -117,7 +128,7 @@ const useStudentListsStore = create<{
         humanAutomator: { studentLists: updatedLists },
       })
 
-      set({ studentLists: updatedLists })
+      get().setStudentLists(updatedLists)
     },
     isListNameExists: (name) => {
       return get().studentLists.some((list) => list.name === name)
@@ -132,8 +143,14 @@ const useStudentListsStore = create<{
 
       const studentsStore = useStudentsStore.getState()
 
-      if (studentSelectType === 'all' && studentsStore.selectedStudents.length > 0) {
-        studentsStore.setSelectedStudents([])
+      if (studentSelectType === 'all') {
+        if (studentsStore.selectedStudents.length > 0) {
+          studentsStore.setSelectedStudents([])
+        }
+
+        if (get().selectedStudentLists.length > 0) {
+          get().setSelectedStudentLists([])
+        }
       }
     },
     reset: () =>
