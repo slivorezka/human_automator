@@ -1,7 +1,7 @@
-import { TIMING } from '../constants/config'
-import useAppStore from '../stores/useAppStore'
-import { cellRemoveSelected } from '../utils/gradebook'
-import { getRandomInt } from '../utils/helper'
+import { TIMING } from '@/constants/config'
+import useAppStore from '@/stores/useAppStore'
+import { cellRemoveSelected } from '@/utils/gradebook'
+import { getRandomInt } from '@/utils/helper'
 
 const useProcessing = () => {
   const processItem = async ({

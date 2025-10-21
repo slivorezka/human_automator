@@ -3,10 +3,10 @@ import { Card, Form } from 'react-bootstrap'
 import Select, { type MultiValue } from 'react-select'
 import makeAnimated from 'react-select/animated'
 
-import useAppStore from '../../stores/useAppStore'
-import useStudentsStore from '../../stores/useStudentsStore'
-import type { SelectOption } from '../../types'
-import { getSelectOption } from '../../utils/helper'
+import useAppStore from '@/stores/useAppStore'
+import useStudentsStore from '@/stores/useStudentsStore'
+import type { SelectOption } from '@/types'
+import { getSelectOption } from '@/utils/helper'
 
 export function StudentSelectTypeCustom({ children }: { children?: ReactNode }) {
   const animatedComponents = makeAnimated()

@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-import type { Action } from '../types'
+import type { Action } from '@/types'
 
 const useActionStore = create<{
   action: Action

@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { Toast, ToastContainer } from 'react-bootstrap'
 import type { Variant } from 'react-bootstrap/types'
 
-import { TIMING } from '../../constants/config.ts'
+import { TIMING } from '@/constants/config'
 
 function Message({
   children,

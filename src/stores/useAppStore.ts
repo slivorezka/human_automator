@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-import { fillPercent } from '../utils/gradebook'
+import { fillPercent } from '@/utils/gradebook'
 
 const useAppStore = create<{
   minRating: number

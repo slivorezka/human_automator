@@ -1,9 +1,10 @@
 import type { MultiValue } from 'react-select'
 import { create } from 'zustand'
 
-import type { SelectOption } from '../types'
-import { fillPercent } from '../utils/gradebook'
-import { students } from '../utils/gradebook'
+import type { SelectOption } from '@/types'
+import { fillPercent } from '@/utils/gradebook'
+import { students } from '@/utils/gradebook'
+
 import useAppStore from './useAppStore'
 import useFormErrorStore from './useFormErrorStore'
 

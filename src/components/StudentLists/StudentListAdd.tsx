@@ -4,14 +4,14 @@ import { Button, Card, Form, InputGroup, Modal } from 'react-bootstrap'
 import Select, { type MultiValue } from 'react-select'
 import makeAnimated from 'react-select/animated'
 
-import useFormErrorStore from '../../stores/useFormErrorStore'
-import useModalStoreStore from '../../stores/useModalStoreStore'
-import useStudentListsStore from '../../stores/useStudentListsStore'
-import useStudentsStore from '../../stores/useStudentsStore'
-import useToastStore from '../../stores/useToastStore'
-import type { SelectOption } from '../../types'
-import { className } from '../../utils/gradebook'
-import { getSelectOption } from '../../utils/helper'
+import useFormErrorStore from '@/stores/useFormErrorStore'
+import useModalStoreStore from '@/stores/useModalStoreStore'
+import useStudentListsStore from '@/stores/useStudentListsStore'
+import useStudentsStore from '@/stores/useStudentsStore'
+import useToastStore from '@/stores/useToastStore'
+import type { SelectOption } from '@/types'
+import { className } from '@/utils/gradebook'
+import { getSelectOption } from '@/utils/helper'
 
 function StudentListAdd() {
   const animatedComponents = makeAnimated()

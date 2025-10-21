@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-import type { ModalType } from '../types'
+import type { ModalType } from '@/types'
 
 const useModalStoreStore = create<{
   showModalBasic: boolean

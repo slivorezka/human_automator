@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-import type { ToastType } from '../types'
+import type { ToastType } from '@/types'
 
 const useToastStore = create<{
   toast: ToastType

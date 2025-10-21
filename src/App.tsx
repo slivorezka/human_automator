@@ -3,29 +3,29 @@ import { type FormEvent } from 'react'
 import { Button, Card, Form, InputGroup, Modal, ProgressBar } from 'react-bootstrap'
 import { RotatingLines } from 'react-loader-spinner'
 
-import Description from './components/Description'
-import Header from './components/Header'
-import Message from './components/Message'
-import RatingCount from './components/RatingCount'
-import StudentListAdd from './components/StudentLists/StudentListAdd'
-import StudentListDelete from './components/StudentLists/StudentListDelete'
-import StudentListEdit from './components/StudentLists/StudentListEdit'
-import StudentLists from './components/StudentLists/StudentLists'
+import Description from '@/components/Description'
+import Header from '@/components/Header'
+import Message from '@/components/Message'
+import RatingCount from '@/components/RatingCount'
+import StudentListAdd from '@/components/StudentLists/StudentListAdd'
+import StudentListDelete from '@/components/StudentLists/StudentListDelete'
+import StudentListEdit from '@/components/StudentLists/StudentListEdit'
+import StudentLists from '@/components/StudentLists/StudentLists'
 import {
   StudentSelectType,
   StudentSelectTypeCustom,
   StudentSelectTypeList,
-} from './components/StudentSelectType'
-import { EXAMPLE_RATING, MAX_RATING, MIN_RATING } from './constants/config'
-import useProcessing from './hooks/useProcessing'
-import useActionStore from './stores/useActionStore'
-import useAppStore from './stores/useAppStore'
-import useFormErrorStore from './stores/useFormErrorStore'
-import useModalStoreStore from './stores/useModalStoreStore'
-import useStudentListsStore from './stores/useStudentListsStore'
-import useStudentsStore from './stores/useStudentsStore'
-import useToastStore from './stores/useToastStore'
-import type { ToastType } from './types'
+} from '@/components/StudentSelectType'
+import { EXAMPLE_RATING, MAX_RATING, MIN_RATING } from '@/constants/config'
+import useProcessing from '@/hooks/useProcessing'
+import useActionStore from '@/stores/useActionStore'
+import useAppStore from '@/stores/useAppStore'
+import useFormErrorStore from '@/stores/useFormErrorStore'
+import useModalStoreStore from '@/stores/useModalStoreStore'
+import useStudentListsStore from '@/stores/useStudentListsStore'
+import useStudentsStore from '@/stores/useStudentsStore'
+import useToastStore from '@/stores/useToastStore'
+import type { ToastType } from '@/types'
 import {
   cellAbsent,
   cellRemoveSelected,
@@ -37,8 +37,8 @@ import {
   ratingComment,
   studentName,
   toolPanel,
-} from './utils/gradebook'
-import { beep, shuffleArray } from './utils/helper'
+} from '@/utils/gradebook'
+import { beep, shuffleArray } from '@/utils/helper'
 
 function App() {
   const {

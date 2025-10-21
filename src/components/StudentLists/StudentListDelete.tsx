@@ -1,9 +1,9 @@
 import { Trash2, X } from 'lucide-react'
 import { Button, Modal } from 'react-bootstrap'
 
-import useModalStoreStore from '../../stores/useModalStoreStore'
-import useStudentListsStore from '../../stores/useStudentListsStore'
-import useToastStore from '../../stores/useToastStore'
+import useModalStoreStore from '@/stores/useModalStoreStore'
+import useStudentListsStore from '@/stores/useStudentListsStore'
+import useToastStore from '@/stores/useToastStore'
 
 function StudentListDelete() {
   const { setShowModalStudentLists, showModalStudentListDelete, setShowModalStudentListDelete } =

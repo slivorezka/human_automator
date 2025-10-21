@@ -1,7 +1,7 @@
 import { Form } from 'react-bootstrap'
 
-import useAppStore from '../../stores/useAppStore'
-import useStudentListsStore from '../../stores/useStudentListsStore'
+import useAppStore from '@/stores/useAppStore'
+import useStudentListsStore from '@/stores/useStudentListsStore'
 
 export function StudentSelectType() {
   const { isSubmitting } = useAppStore()

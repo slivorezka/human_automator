@@ -1,10 +1,10 @@
 import { Pencil, Plus, Trash2, X } from 'lucide-react'
 import { Button, Card, Modal, Table } from 'react-bootstrap'
 
-import useModalStoreStore from '../../stores/useModalStoreStore'
-import useStudentListsStore from '../../stores/useStudentListsStore'
-import type { StudentList } from '../../types'
-import { className } from '../../utils/gradebook'
+import useModalStoreStore from '@/stores/useModalStoreStore'
+import useStudentListsStore from '@/stores/useStudentListsStore'
+import type { StudentList } from '@/types'
+import { className } from '@/utils/gradebook'
 
 function StudentLists() {
   const {

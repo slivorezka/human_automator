@@ -1,4 +1,4 @@
-import type { SelectOption, StudentList } from '../types'
+import type { SelectOption, StudentList } from '@/types'
 
 export const getRandomInt = (min: number, max: number) => {
   min = Math.ceil(min)

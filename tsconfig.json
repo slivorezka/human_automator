@@ -1,6 +1,10 @@
 {
   "files": [],
   "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
     "types": ["vitest/globals"],
     "jsx": "react-jsx",
     "esModuleInterop": true,
