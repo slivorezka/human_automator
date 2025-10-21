@@ -40,15 +40,13 @@ function StudentListAdd() {
       return
     }
 
-    console.info(111)
-
     setSelectedStudentLists([])
     setToast('studentListAdd')
     handleClose()
   }
 
   return (
-    <Modal show={showModalStudentListAdd} onHide={handleClose} animation centered>
+    <Modal show={showModalStudentListAdd} onHide={handleClose} centered animation>
       <Form onSubmit={handleSubmit}>
         <Modal.Header className="justify-content-center" closeButton>
           <Modal.Title as="h5">Створювання нового списку учнів {nameClass}</Modal.Title>

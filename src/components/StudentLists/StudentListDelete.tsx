@@ -36,7 +36,7 @@ function StudentListDelete() {
   }
 
   return (
-    <Modal show={showModalStudentListDelete} onHide={handleClose} animation centered>
+    <Modal show={showModalStudentListDelete} onHide={handleClose} centered animation>
       <Modal.Header className="justify-content-center" closeButton>
         <Modal.Title as="h5">Видалити {studentList.name}?</Modal.Title>
       </Modal.Header>

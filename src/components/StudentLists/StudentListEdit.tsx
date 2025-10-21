@@ -57,7 +57,7 @@ function StudentListEdit() {
   }
 
   return (
-    <Modal show={showModalStudentListEdit} onHide={handleClose} animation centered>
+    <Modal show={showModalStudentListEdit} onHide={handleClose} centered animation>
       <Form onSubmit={handleSubmit}>
         <Modal.Header className="justify-content-center" closeButton>
           <Modal.Title as="h5">Редагування списку {name}</Modal.Title>

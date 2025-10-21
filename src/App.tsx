@@ -1,20 +1,22 @@
-import { Pencil, Play, Plus, X } from 'lucide-react'
+import { Play, X } from 'lucide-react'
 import { type FormEvent } from 'react'
 import { Button, Card, Form, InputGroup, Modal, ProgressBar } from 'react-bootstrap'
 import { RotatingLines } from 'react-loader-spinner'
-import type { MultiValue } from 'react-select'
-import Select from 'react-select'
-import makeAnimated from 'react-select/animated'
 
 import Description from './components/Description'
 import Header from './components/Header'
 import Message from './components/Message'
 import RatingCount from './components/RatingCount'
 import StudentListAdd from './components/StudentLists/StudentListAdd'
-import StudentListDelete from './components/StudentLists/StudentListDelete.tsx'
+import StudentListDelete from './components/StudentLists/StudentListDelete'
 import StudentListEdit from './components/StudentLists/StudentListEdit'
 import StudentLists from './components/StudentLists/StudentLists'
-import { EXAMPLE_RATING, MAX_RATING, MIN_RATING, TIMING } from './constants/config'
+import {
+  StudentSelectType,
+  StudentSelectTypeCustom,
+  StudentSelectTypeList,
+} from './components/StudentSelectType'
+import { EXAMPLE_RATING, MAX_RATING, MIN_RATING } from './constants/config'
 import useProcessing from './hooks/useProcessing'
 import useActionStore from './stores/useActionStore'
 import useAppStore from './stores/useAppStore'
@@ -23,7 +25,7 @@ import useModalStoreStore from './stores/useModalStoreStore'
 import useStudentListsStore from './stores/useStudentListsStore'
 import useStudentsStore from './stores/useStudentsStore'
 import useToastStore from './stores/useToastStore'
-import type { SelectOption, ToastType } from './types'
+import type { ToastType } from './types'
 import {
   cellAbsent,
   cellRemoveSelected,
@@ -36,11 +38,9 @@ import {
   studentName,
   toolPanel,
 } from './utils/gradebook'
-import { beep, getSelectListOption, getSelectOption, shuffleArray } from './utils/helper'
+import { beep, shuffleArray } from './utils/helper'
 
 function App() {
-  const animatedComponents = makeAnimated()
-
   const {
     showModalBasic,
     showModalStudentLists,
@@ -48,11 +48,10 @@ function App() {
     showModalStudentListEdit,
     showModalStudentListDelete,
     setShowModalBasic,
-    setShowModalStudentLists,
-    setShowModalStudentListAdd,
   } = useModalStoreStore()
 
   const {
+    isProcessing,
     setProcessing,
     minRating,
     setMinRating,
@@ -73,16 +72,14 @@ function App() {
   } = useAppStore()
 
   const { ratingError, setRatingError, percentError, setPercentError } = useFormErrorStore()
-  const { studentsList, selectedStudents, handleSelectedStudents } = useStudentsStore()
+  const { selectedStudents } = useStudentsStore()
 
   const {
     isStudentSelectTypeAll,
     isStudentSelectTypeList,
     isStudentSelectTypeCustom,
     selectedStudentLists,
-    handleSelectedStudentLists,
     studentLists,
-    setStudentSelectType,
   } = useStudentListsStore()
 
   const { toast, setToast } = useToastStore()
@@ -92,31 +89,24 @@ function App() {
 
   const handleStop = (status: ToastType) => {
     setProcessing(false)
+    setSubmitting(false)
     toolPanel(false)
     cellRemoveSelected(false)
-    setShowModalBasic(false)
     setToast(status)
     beep()
-    setTimeout(
-      () => window.dispatchEvent(new CustomEvent('destroyHumanAutomator')),
-      TIMING.DESTROY_TOAST_APP_DELAY
-    )
   }
 
   const handleClose = () => {
+    setSubmitting(false)
     toolPanel(false)
     cellRemoveSelected(false)
-    setShowModalBasic(false)
-    let destroy = TIMING.DESTROY_APP_DELAY
 
-    if (useAppStore.getState().isProcessing) {
-      setProcessing(false)
-      setToast('basicCancel')
-      beep()
-      destroy = TIMING.DESTROY_TOAST_APP_DELAY
+    if (isProcessing) {
+      setShowModalBasic(true)
+      handleStop('basicCancel')
+    } else {
+      setShowModalBasic(false)
     }
-
-    setTimeout(() => window.dispatchEvent(new CustomEvent('destroyHumanAutomator')), destroy)
   }
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -141,22 +131,25 @@ function App() {
 
       const emptyCells: HTMLElement[] = []
 
-      if (selectedStudentLists) {
-        console.info(selectedStudentLists)
-        /*for (const row of rows) {
-          if (selectedStudents.find((student) => student.value === studentName(row))) {
-            for (const cell of [...cellsNarrow(row)]) {
-              if (
-                ratingComment(cell as HTMLElement) &&
-                !cellAbsent(cell as HTMLElement) &&
-                !rating(cell as HTMLElement)
-              ) {
-                emptyCells.push(cell as HTMLElement)
+      if (isStudentSelectTypeList && selectedStudentLists.length > 0) {
+        selectedStudentLists.forEach((studentList) => {
+          for (const row of getRows()) {
+            if (studentList.students.some((student) => student === studentName(row))) {
+              for (const cell of [...cellsNarrow(row)]) {
+                if (
+                  ratingComment(cell as HTMLElement) &&
+                  !cellAbsent(cell as HTMLElement) &&
+                  !rating(cell as HTMLElement)
+                ) {
+                  emptyCells.push(cell as HTMLElement)
+                }
               }
             }
           }
-        }*/
-      } else if (selectedStudents) {
+        })
+      }
+
+      if (isStudentSelectTypeCustom && selectedStudents.length > 0) {
         for (const row of getRows()) {
           if (selectedStudents.find((student) => student === studentName(row))) {
             for (const cell of [...cellsNarrow(row)]) {
@@ -170,7 +163,9 @@ function App() {
             }
           }
         }
-      } else {
+      }
+
+      if (isStudentSelectTypeAll) {
         for (const cell of getCells()) {
           if (
             ratingComment(cell as HTMLElement) &&
@@ -194,7 +189,6 @@ function App() {
         setCurrentPercent(percent)
 
         if (!useAppStore.getState().isProcessing) {
-          handleStop('basicCancel')
           return
         }
 
@@ -234,13 +228,25 @@ function App() {
         }
       }
 
-      if (selectedStudents) {
+      if (isStudentSelectTypeList && selectedStudentLists.length > 0) {
+        selectedStudentLists.forEach((studentList) => {
+          for (const row of getRows()) {
+            if (studentList.students.some((student) => student === studentName(row))) {
+              processRow(row)
+            }
+          }
+        })
+      }
+
+      if (isStudentSelectTypeCustom && selectedStudents.length > 0) {
         for (const row of getRows()) {
-          if (selectedStudents.find((student) => student === studentName(row))) {
+          if (selectedStudents.some((student) => student === studentName(row))) {
             processRow(row)
           }
         }
-      } else {
+      }
+
+      if (isStudentSelectTypeAll) {
         for (const row of getRows()) {
           processRow(row)
         }
@@ -255,7 +261,6 @@ function App() {
         setCurrentPercent(fillPercent(selectedStudents))
 
         if (!useAppStore.getState().isProcessing) {
-          handleStop('basicCancel')
           return
         }
       }
@@ -302,7 +307,7 @@ function App() {
       {showModalStudentLists && <StudentLists />}
 
       {isRunCountRating && (
-        <Modal show={showModalBasic} onHide={handleClose} centered>
+        <Modal show={showModalBasic} onHide={handleClose} centered animation>
           <Header />
           <Modal.Body>
             <Card>
@@ -320,8 +325,8 @@ function App() {
         </Modal>
       )}
 
-      {useAppStore.getState().isProcessing ? (
-        <Modal show={showModalBasic} onHide={handleClose} centered>
+      {isProcessing ? (
+        <Modal show={showModalBasic} onHide={handleClose} centered animation>
           <Header />
           <Modal.Body>
             <ProgressBar
@@ -415,35 +420,7 @@ function App() {
                   </Description>
                   <Card className="mt-3">
                     <Card.Body>
-                      <Form.Check
-                        type="switch"
-                        label="Обрати всіх учнів"
-                        onChange={() => setStudentSelectType('all')}
-                        checked={isStudentSelectTypeAll}
-                        disabled={isSubmitting}
-                      />
-                      <Form.Check
-                        type="switch"
-                        label="Використати список учнів"
-                        onChange={(e) =>
-                          e.target.checked
-                            ? setStudentSelectType('list')
-                            : setStudentSelectType('all')
-                        }
-                        checked={isStudentSelectTypeList}
-                        disabled={isSubmitting}
-                      />
-                      <Form.Check
-                        type="switch"
-                        label="Обрати учнів зі списку"
-                        onChange={(e) =>
-                          e.target.checked
-                            ? setStudentSelectType('custom')
-                            : setStudentSelectType('all')
-                        }
-                        checked={isStudentSelectTypeCustom}
-                        disabled={isSubmitting}
-                      />
+                      <StudentSelectType />
                       <Form.Text>
                         <ul className="mt-3 mb-0">
                           <li>
@@ -464,108 +441,15 @@ function App() {
                     </Card.Body>
                   </Card>
                   {isStudentSelectTypeList && (
-                    <>
-                      {studentLists?.length > 0 ? (
-                        <>
-                          <Card className="mt-3">
-                            <Card.Body>
-                              <Form.Label className="fw-bold">Списки учнів</Form.Label>
-                              <Select
-                                className="mb-2"
-                                placeholder="Оберіть список учнів"
-                                defaultValue={getSelectListOption(selectedStudentLists)}
-                                options={getSelectListOption(studentLists)}
-                                onChange={(options) =>
-                                  handleSelectedStudentLists(options as MultiValue<SelectOption>)
-                                }
-                                isMulti
-                                required
-                                closeMenuOnSelect
-                                components={animatedComponents}
-                                isDisabled={isSubmitting}
-                              />
-                              <Form.Text>
-                                <span className="fw-bold">Оберіть список учнів</span>, яким бажаєте
-                                виставити оцінки
-                              </Form.Text>
-                            </Card.Body>
-                          </Card>
-                          <Card className="mt-3">
-                            <Card.Body>
-                              <div className="d-flex justify-content-between">
-                                <Button
-                                  variant="success"
-                                  size="sm"
-                                  onClick={() => {
-                                    setShowModalStudentListAdd(true)
-                                  }}
-                                >
-                                  <Plus width={14} height={14} />
-                                  <span className="align-middle ms-1">Створити список учнів</span>
-                                </Button>
-
-                                <Button
-                                  variant="primary"
-                                  size="sm"
-                                  onClick={() => {
-                                    setShowModalStudentLists(true)
-                                  }}
-                                >
-                                  <Pencil width={14} height={14} />
-                                  <span className="align-middle ms-1">Редагувати списки учнів</span>
-                                </Button>
-                              </div>
-                            </Card.Body>
-                          </Card>
-                        </>
-                      ) : (
-                        <Card className="mt-3">
-                          <Card.Body>
-                            <div className="text-center">
-                              <p>
-                                Жодного <span className="fw-bold">списку учнів</span> ще не створено
-                              </p>
-                              <div>
-                                <Button
-                                  variant="primary"
-                                  size="sm"
-                                  onClick={() => {
-                                    setShowModalStudentListAdd(true)
-                                  }}
-                                >
-                                  <Plus width={14} height={14} />
-                                  <span className="align-middle ms-1">Створити список учнів</span>
-                                </Button>
-                              </div>
-                            </div>
-                          </Card.Body>
-                        </Card>
-                      )}
-                    </>
+                    <StudentSelectTypeList>
+                      <span className="fw-bold">Оберіть список учнів</span>, яким бажаєте виставити
+                      оцінки
+                    </StudentSelectTypeList>
                   )}
                   {isStudentSelectTypeCustom && (
-                    <Card className="mt-3">
-                      <Card.Body>
-                        <Form.Label className="fw-bold">Оберіть учнів</Form.Label>
-                        <Select
-                          className="mb-2"
-                          placeholder="Оберіть учнів"
-                          options={getSelectOption(studentsList)}
-                          onChange={(options) =>
-                            handleSelectedStudents(options as MultiValue<SelectOption>)
-                          }
-                          isMulti
-                          required
-                          closeMenuOnSelect={false}
-                          components={animatedComponents}
-                          isDisabled={isSubmitting}
-                        />
-                        <Form.Text>
-                          <span className="fw-bold">Оберіть учнів</span> яким бажаєте виставити
-                          оцінки
-                        </Form.Text>
-                      </Card.Body>
-                    </Card>
+                    <StudentSelectTypeCustom>
+                      <span className="fw-bold">Оберіть учнів</span> яким бажаєте виставити оцінки
+                    </StudentSelectTypeCustom>
                   )}
                   <Card className="mt-3">
                     <Card.Body>
@@ -684,31 +568,38 @@ function App() {
                   </Description>
                   <Card className="mt-3">
                     <Card.Body>
-                      <Form.Label className="fw-bold">Оберіть учнів</Form.Label>
-                      <Select
-                        className="mb-2"
-                        placeholder="Оберіть учнів"
-                        options={getSelectListOption(studentLists)}
-                        onChange={(options) =>
-                          handleSelectedStudents(options as MultiValue<SelectOption>)
-                        }
-                        isMulti
-                        closeMenuOnSelect={false}
-                        components={animatedComponents}
-                        isDisabled={isSubmitting}
-                      />
+                      <StudentSelectType />
                       <Form.Text>
-                        <p>
-                          <span className="fw-bold">Оберіть учнів</span>, яким бажаєте видалити
-                          оцінки
-                        </p>
-                        <p>
-                          Якщо <span className="fw-bold">НЕ</span> буде обрано жодного учня то,
-                          оцінки буде видалено <span className="fw-bold">усім учням</span>
-                        </p>
+                        <ul className="mt-3 mb-0">
+                          <li>
+                            <span className="fw-bold">Обрати всіх учнів</span> — дозволяє видалити
+                            оцінки
+                            <span className="fw-bold"> усім учням</span>
+                          </li>
+                          <li>
+                            <span className="fw-bold">Використати список учнів</span> — дозволяє
+                            видалити оцінки учням з обраного списку
+                          </li>
+                          <li>
+                            <span className="fw-bold">Обрати учнів зі списку</span> — дозволяє
+                            видалити оцінки <span className="fw-bold">окремим обраним учням</span>
+                          </li>
+                        </ul>
                       </Form.Text>
                     </Card.Body>
                   </Card>
+
+                  {isStudentSelectTypeList && (
+                    <StudentSelectTypeList>
+                      <span className="fw-bold">Оберіть список учнів</span>, яким бажаєте видалити
+                      оцінки
+                    </StudentSelectTypeList>
+                  )}
+                  {isStudentSelectTypeCustom && (
+                    <StudentSelectTypeCustom>
+                      <span className="fw-bold">Оберіть учнів</span>, яким бажаєте видалити оцінки
+                    </StudentSelectTypeCustom>
+                  )}
                   {!removeAllRating && (
                     <Card className="mt-3">
                       <Card.Body>
