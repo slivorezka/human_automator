@@ -115,6 +115,16 @@ function App() {
     toolPanel(true)
     cellRemoveSelected(true)
 
+    let students: string[] = []
+
+    if (isStudentSelectTypeList && selectedStudentLists.length > 0) {
+      students = selectedStudentLists.flatMap((studentList) => studentList.students)
+    }
+
+    if (isStudentSelectTypeCustom && selectedStudents.length > 0) {
+      students = selectedStudents
+    }
+
     if (isSetRating) {
       if (minRating > maxRating) {
         setRatingError('Мінімальна оцінка не може бути більшою за максимальну')
@@ -177,6 +187,8 @@ function App() {
         }
       }
 
+      setCurrentPercent(fillPercent(students))
+
       for (const cell of shuffleArray(emptyCells)) {
         await processItem({
           cell,
@@ -184,11 +196,11 @@ function App() {
           maxRating,
         })
 
-        const percent = fillPercent(selectedStudents)
+        const percent = fillPercent(students)
 
         setCurrentPercent(percent)
 
-        if (!useAppStore.getState().isProcessing) {
+        if (!isProcessing) {
           return
         }
 
@@ -252,15 +264,17 @@ function App() {
         }
       }
 
+      setCurrentPercent(fillPercent(students))
+
       for (const cell of cells) {
         await processItem({
           cell,
           remove: true,
         })
 
-        setCurrentPercent(fillPercent(selectedStudents))
+        setCurrentPercent(fillPercent(students))
 
-        if (!useAppStore.getState().isProcessing) {
+        if (!isProcessing) {
           return
         }
       }
