@@ -1,3 +1,19 @@
+export type ModalType =
+  | 'basic'
+  | 'studentLists'
+  | 'studentListAdd'
+  | 'studentListEdit'
+  | 'studentListDelete'
+export type Action = false | 'setRating' | 'deleteRating' | 'countRating'
+export type StudentSelectType = 'list' | 'custom' | 'all'
+export type ToastType =
+  | false
+  | 'basicDone'
+  | 'basicCancel'
+  | 'studentListAdd'
+  | 'studentListSave'
+  | 'studentListDelete'
+
 export interface SelectOption {
   value: string
   label: string
@@ -9,13 +25,3 @@ export interface StudentList {
   name: string
   students: string[]
 }
-
-export type Action = false | 'set_rating' | 'delete_rating' | 'count_rating'
-export type StudentSelectType = 'list' | 'custom' | 'all'
-export type ToastType =
-  | false
-  | 'GeneralDone'
-  | 'GeneralCancel'
-  | 'StudentListAdd'
-  | 'StudentListSave'
-  | 'StudentListDelete'

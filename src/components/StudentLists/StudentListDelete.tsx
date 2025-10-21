@@ -1,21 +1,20 @@
 import { Trash2, X } from 'lucide-react'
 import { Button, Modal } from 'react-bootstrap'
 
+import useModalStoreStore from '../../stores/useModalStoreStore'
 import useStudentListsStore from '../../stores/useStudentListsStore'
 import useToastStore from '../../stores/useToastStore'
 
-function StudentListRemove() {
+function StudentListDelete() {
+  const { showModalStudentListDelete, setShowModalStudentListDelete } = useModalStoreStore()
   const {
     studentListId,
-    showModalStudentListRemove,
-    setShowModalStudentListRemove,
     getStudentListById,
     setStudentListId,
     removeStudentList,
+    setSelectedStudentLists,
   } = useStudentListsStore()
-
   const { setToast } = useToastStore()
-
   const studentList = getStudentListById(studentListId)
 
   if (!studentList) {
@@ -24,17 +23,18 @@ function StudentListRemove() {
 
   const handleClose = () => {
     setStudentListId('')
-    setShowModalStudentListRemove(false)
+    setShowModalStudentListDelete(false)
   }
 
   const handleConfirm = async () => {
     await removeStudentList(studentListId)
-    setToast('StudentListDelete')
+    setSelectedStudentLists([])
+    setToast('studentListDelete')
     handleClose()
   }
 
   return (
-    <Modal show={showModalStudentListRemove} onHide={handleClose} animation centered>
+    <Modal show={showModalStudentListDelete} onHide={handleClose} animation centered>
       <Modal.Header className="justify-content-center" closeButton>
         <Modal.Title as="h5">Видалити {studentList.name}?</Modal.Title>
       </Modal.Header>
@@ -55,4 +55,4 @@ function StudentListRemove() {
   )
 }
 
-export default StudentListRemove
+export default StudentListDelete

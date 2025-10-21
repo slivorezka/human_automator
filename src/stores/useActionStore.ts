@@ -8,30 +8,25 @@ const useActionStore = create<{
   isSetRating: boolean
   isDeleteRating: boolean
   isCountRating: boolean
-  showActionModal: boolean
-  setShowActionModal: (value: boolean) => void
   reset: () => void
 }>((set) => ({
   action: false,
   isSetRating: false,
   isDeleteRating: false,
   isCountRating: false,
-  showActionModal: true,
   setAction: (action) =>
     set({
       action,
-      isSetRating: action === 'set_rating',
-      isDeleteRating: action === 'delete_rating',
-      isCountRating: action === 'count_rating',
+      isSetRating: action === 'setRating',
+      isDeleteRating: action === 'deleteRating',
+      isCountRating: action === 'countRating',
     }),
-  setShowActionModal: (value) => set({ showActionModal: value }),
   reset: () =>
     set({
       action: false,
       isSetRating: false,
       isDeleteRating: false,
       isCountRating: false,
-      showActionModal: true,
     }),
 }))
 

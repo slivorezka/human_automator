@@ -5,17 +5,18 @@ import Select, { type MultiValue } from 'react-select'
 import makeAnimated from 'react-select/animated'
 
 import useFormErrorStore from '../../stores/useFormErrorStore'
+import useModalStoreStore from '../../stores/useModalStoreStore'
 import useStudentListsStore from '../../stores/useStudentListsStore'
 import useStudentsStore from '../../stores/useStudentsStore'
 import useToastStore from '../../stores/useToastStore'
 import type { SelectOption } from '../../types'
 import { className } from '../../utils/gradebook'
-import { getSelectOption } from '../../utils/helper.ts'
+import { getSelectOption } from '../../utils/helper'
 
 function StudentListAdd() {
   const animatedComponents = makeAnimated()
-  const { showModalStudentListAdd, setShowModalStudentListAdd, setStudentListId, addStudentList } =
-    useStudentListsStore()
+  const { showModalStudentListAdd, setShowModalStudentListAdd } = useModalStoreStore()
+  const { setStudentListId, addStudentList, setSelectedStudentLists } = useStudentListsStore()
   const { studentsList, selectedStudents, handleSelectedStudents } = useStudentsStore()
   const { nameError, setNameError } = useFormErrorStore()
   const { setToast } = useToastStore()
@@ -37,7 +38,10 @@ function StudentListAdd() {
       return
     }
 
-    setToast('StudentListAdd')
+    console.info(111)
+
+    setSelectedStudentLists([])
+    setToast('studentListAdd')
     handleClose()
   }
 
@@ -58,7 +62,7 @@ function StudentListAdd() {
                   isInvalid={!!nameError}
                   placeholder="Введіть назву списку"
                   onChange={(e) => {
-                    setName(e.target.value)
+                    setName(e.target.value.trim())
                     setNameError('')
                   }}
                   required

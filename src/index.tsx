@@ -8,6 +8,7 @@ import App from './App'
 import useActionStore from './stores/useActionStore'
 import useAppStore from './stores/useAppStore'
 import useFormErrorStore from './stores/useFormErrorStore'
+import useModalStoreStore from './stores/useModalStoreStore'
 import useStudentListsStore from './stores/useStudentListsStore'
 import useStudentsStore from './stores/useStudentsStore'
 import useToastStore from './stores/useToastStore'
@@ -38,6 +39,7 @@ window.addEventListener('destroyHumanAutomator', () => {
   useActionStore.getState().reset()
   useAppStore.getState().reset()
   useFormErrorStore.getState().reset()
+  useModalStoreStore.getState().reset()
   useStudentListsStore.getState().reset()
   useStudentsStore.getState().reset()
   useToastStore.getState().reset()

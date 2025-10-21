@@ -5,6 +5,7 @@ import Select, { type MultiValue } from 'react-select'
 import makeAnimated from 'react-select/animated'
 
 import useFormErrorStore from '../../stores/useFormErrorStore'
+import useModalStoreStore from '../../stores/useModalStoreStore'
 import useStudentListsStore from '../../stores/useStudentListsStore'
 import useStudentsStore from '../../stores/useStudentsStore'
 import useToastStore from '../../stores/useToastStore'
@@ -13,15 +14,14 @@ import { getSelectOption } from '../../utils/helper'
 
 function StudentListEdit() {
   const animatedComponents = makeAnimated()
-
+  const { showModalStudentListEdit, setShowModalStudentListEdit } = useModalStoreStore()
   const {
     studentListId,
-    showModalStudentListEdit,
-    setShowModalStudentListEdit,
     setStudentListId,
     getStudentListById,
     updateStudentList,
     isListNameExists,
+    setSelectedStudentLists,
   } = useStudentListsStore()
   const { studentsList, selectedStudents, handleSelectedStudents } = useStudentsStore()
   const { nameError, setNameError } = useFormErrorStore()
@@ -49,7 +49,8 @@ function StudentListEdit() {
     }
 
     await updateStudentList(studentListId, name, selectedStudents)
-    setToast('StudentListSave')
+    setSelectedStudentLists([])
+    setToast('studentListSave')
     handleClose()
   }
 
@@ -70,7 +71,7 @@ function StudentListEdit() {
                   isInvalid={!!nameError}
                   placeholder="Введіть назву списку"
                   onChange={(e) => {
-                    setName(e.target.value)
+                    setName(e.target.value.trim())
                     setNameError('')
                   }}
                   required

@@ -15,19 +15,11 @@ const useStudentListsStore = create<{
   isStudentSelectTypeList: boolean
   isStudentSelectTypeCustom: boolean
   selectedStudentLists: StudentList[]
-  showModalStudentLists: boolean
-  showModalStudentListAdd: boolean
-  showModalStudentListEdit: boolean
-  showModalStudentListRemove: boolean
   setStudentSelectType: (studentSelectType: StudentSelectType) => void
   handleSelectedStudentLists: (studentLists: MultiValue<SelectOption>) => void
   setStudentLists: (studentLists: StudentList[]) => void
   setStudentListId: (id: string) => void
   loadStudentLists: () => Promise<void>
-  setShowModalStudentLists: (value: boolean) => void
-  setShowModalStudentListAdd: (value: boolean) => void
-  setShowModalStudentListEdit: (value: boolean) => void
-  setShowModalStudentListRemove: (value: boolean) => void
   setSelectedStudentLists: (studentLists: StudentList[]) => void
   getStudentListById: (id: string) => StudentList | undefined
   addStudentList: (name: string, students: string[]) => Promise<boolean>
@@ -44,10 +36,6 @@ const useStudentListsStore = create<{
     isStudentSelectTypeAll: true,
     isStudentSelectTypeList: false,
     isStudentSelectTypeCustom: false,
-    showModalStudentLists: false,
-    showModalStudentListAdd: false,
-    showModalStudentListEdit: false,
-    showModalStudentListRemove: false,
     loadStudentLists: async () => {
       const result = await chrome.storage.local.get('humanAutomator')
       get().setStudentLists(result.humanAutomator?.studentLists || [])
@@ -65,10 +53,6 @@ const useStudentListsStore = create<{
       set({ studentLists: [...studentLists].sort((a, b) => a.name.localeCompare(b.name)) })
     },
     setStudentListId: (id) => set({ studentListId: id }),
-    setShowModalStudentLists: (value) => set({ showModalStudentLists: value }),
-    setShowModalStudentListAdd: (value) => set({ showModalStudentListAdd: value }),
-    setShowModalStudentListEdit: (value) => set({ showModalStudentListEdit: value }),
-    setShowModalStudentListRemove: (value) => set({ showModalStudentListRemove: value }),
     setSelectedStudentLists: (studentLists) => {
       set({ selectedStudentLists: studentLists })
       useAppStore
@@ -131,7 +115,7 @@ const useStudentListsStore = create<{
       get().setStudentLists(updatedLists)
     },
     isListNameExists: (name) => {
-      return get().studentLists.some((list) => list.name === name)
+      return get().studentLists.some((list) => list.name.toLowerCase() === name.toLowerCase())
     },
     setStudentSelectType: (studentSelectType) => {
       set({
@@ -162,10 +146,6 @@ const useStudentListsStore = create<{
         isStudentSelectTypeAll: true,
         isStudentSelectTypeList: false,
         isStudentSelectTypeCustom: false,
-        showModalStudentLists: false,
-        showModalStudentListAdd: false,
-        showModalStudentListEdit: false,
-        showModalStudentListRemove: false,
       }),
   }
 })
