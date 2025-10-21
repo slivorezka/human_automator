@@ -45,11 +45,11 @@ function StudentListDelete() {
       </Modal.Body>
       <Modal.Footer className="justify-content-between">
         <Button variant="danger" onClick={handleClose}>
-          <X width={16} height={16} />
+          <X width="16" height="16" />
           <span className="align-middle ms-1">Закрити</span>
         </Button>
         <Button variant="primary" onClick={handleConfirm}>
-          <Trash2 width={16} height={16} />
+          <Trash2 width="16" height="16" />
           <span className="align-middle ms-1">Видалити</span>
         </Button>
       </Modal.Footer>

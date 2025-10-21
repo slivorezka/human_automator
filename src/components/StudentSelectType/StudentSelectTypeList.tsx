@@ -50,7 +50,7 @@ export function StudentSelectTypeList({ children }: { children?: ReactNode }) {
                     setShowModalStudentListAdd(true)
                   }}
                 >
-                  <Plus width={14} height={14} />
+                  <Plus width="14" height="14" />
                   <span className="align-middle ms-1">Створити список учнів</span>
                 </Button>
 
@@ -61,7 +61,7 @@ export function StudentSelectTypeList({ children }: { children?: ReactNode }) {
                     setShowModalStudentLists(true)
                   }}
                 >
-                  <Pencil width={14} height={14} />
+                  <Pencil width="14" height="14" />
                   <span className="align-middle ms-1">Редагувати списки учнів</span>
                 </Button>
               </div>
@@ -83,7 +83,7 @@ export function StudentSelectTypeList({ children }: { children?: ReactNode }) {
                     setShowModalStudentListAdd(true)
                   }}
                 >
-                  <Plus width={14} height={14} />
+                  <Plus width="14" height="14" />
                   <span className="align-middle ms-1">Створити список учнів</span>
                 </Button>
               </div>

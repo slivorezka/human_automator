@@ -69,7 +69,7 @@ function StudentLists() {
                         variant="outline-primary"
                         onClick={() => handleEdit(studentList)}
                       >
-                        <Pencil size={12} />
+                        <Pencil size="12" />
                       </Button>
                       <Button
                         className="pt-0"
@@ -77,7 +77,7 @@ function StudentLists() {
                         variant="outline-danger"
                         onClick={() => handleRemove(studentList)}
                       >
-                        <Trash2 size={12} />
+                        <Trash2 size="12" />
                       </Button>
                     </div>
                   </td>
@@ -101,11 +101,11 @@ function StudentLists() {
       </Modal.Body>
       <Modal.Footer className="justify-content-between">
         <Button variant="danger" onClick={handleClose}>
-          <X width={16} height={16} />
+          <X width="16" height="16" />
           <span className="align-middle ms-1">Закрити</span>
         </Button>
         <Button variant="primary" onClick={handleAdd}>
-          <Plus width={16} height={16} />
+          <Plus width="16" height="16" />
           <span className="align-middle ms-1">Додати</span>
         </Button>
       </Modal.Footer>

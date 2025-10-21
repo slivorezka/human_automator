@@ -72,7 +72,7 @@ function App() {
   } = useAppStore()
 
   const { ratingError, setRatingError, percentError, setPercentError } = useFormErrorStore()
-  const { selectedStudents } = useStudentsStore()
+  const { selectedStudents, setSelectedStudents } = useStudentsStore()
 
   const {
     isStudentSelectTypeAll,
@@ -93,6 +93,8 @@ function App() {
     toolPanel(false)
     cellRemoveSelected(false)
     setToast(status)
+    setSelectedStudents([])
+    setSelectedStudents([])
     beep()
   }
 
@@ -106,6 +108,8 @@ function App() {
       handleStop('basicCancel')
     } else {
       setShowModalBasic(false)
+      setSelectedStudents([])
+      setSelectedStudents([])
     }
   }
 
@@ -200,7 +204,7 @@ function App() {
 
         setCurrentPercent(percent)
 
-        if (!isProcessing) {
+        if (!useAppStore.getState().isProcessing) {
           return
         }
 
@@ -274,7 +278,7 @@ function App() {
 
         setCurrentPercent(fillPercent(students))
 
-        if (!isProcessing) {
+        if (!useAppStore.getState().isProcessing) {
           return
         }
       }
@@ -332,7 +336,7 @@ function App() {
           </Modal.Body>
           <Modal.Footer>
             <Button variant="danger" onClick={handleClose}>
-              <X width={16} height={16} />
+              <X width="16" height="16" />
               <span className="align-middle ms-1">Закрити</span>
             </Button>
           </Modal.Footer>
@@ -375,7 +379,7 @@ function App() {
           </Modal.Body>
           <Modal.Footer>
             <Button variant="danger" onClick={() => handleStop('basicCancel')}>
-              <X width={16} height={16} />
+              <X width="16" height="16" />
               <span className="align-middle ms-1">Зупинити</span>
             </Button>
           </Modal.Footer>
@@ -694,7 +698,7 @@ function App() {
             </Modal.Body>
             <Modal.Footer className="justify-content-between">
               <Button variant="danger" onClick={handleClose}>
-                <X width={16} height={16} />
+                <X width="16" height="16" />
                 <span className="align-middle ms-1">Закрити</span>
               </Button>
               <Button
@@ -704,7 +708,7 @@ function App() {
                 variant="primary"
                 type="submit"
               >
-                <Play width={16} height={16} />
+                <Play width="16" height="16" />
                 <span className="align-middle ms-1">Почати</span>
               </Button>
             </Modal.Footer>

@@ -96,11 +96,11 @@ function StudentListAdd() {
         </Modal.Body>
         <Modal.Footer className="justify-content-between">
           <Button variant="danger" onClick={handleClose}>
-            <X width={16} height={16} />
+            <X width="16" height="16" />
             <span className="align-middle ms-1">Закрити</span>
           </Button>
           <Button variant="primary" type="submit">
-            <Check width={16} height={16} />
+            <Check width="16" height="16" />
             <span className="align-middle ms-1">Зберегти</span>
           </Button>
         </Modal.Footer>
