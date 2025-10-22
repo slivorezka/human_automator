@@ -82,7 +82,7 @@ const useStudentListsStore = create<{
         {
           uuid: crypto.randomUUID(),
           classId: get().classId,
-          name,
+          name: name.trim(),
           classLabel: get().classLabel,
           students,
         },
@@ -104,7 +104,7 @@ const useStudentListsStore = create<{
           ...get().studentLists.filter((studentList) => studentList.uuid !== uuid),
           {
             ...studentList,
-            name,
+            name: name.trim(),
             students,
           },
         ]

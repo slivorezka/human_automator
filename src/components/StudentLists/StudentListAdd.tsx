@@ -17,12 +17,19 @@ function StudentListAdd() {
   const animatedComponents = makeAnimated()
   const { setShowModalStudentLists, showModalStudentListAdd, setShowModalStudentListAdd } =
     useModalStoreStore()
-  const { setStudentListUuid, addStudentList, setSelectedStudentLists } = useStudentListsStore()
+  const { studentLists, setStudentListUuid, addStudentList, setSelectedStudentLists } =
+    useStudentListsStore()
   const { studentsList, selectedStudents, handleSelectedStudents } = useStudentsStore()
   const { nameError, setNameError } = useFormErrorStore()
   const { setToast } = useToastStore()
   const [name, setName] = useState<string>('')
   const classLabel = getClassLabel()
+
+  const studentsInOtherLists = studentLists.flatMap((studentList) => studentList.students)
+
+  const availableStudents = studentsList.filter(
+    (student) => !studentsInOtherLists.some((s) => s === student)
+  )
 
   const handleClose = () => {
     setStudentListUuid('')
@@ -81,7 +88,7 @@ function StudentListAdd() {
               <Select
                 className="mb-2"
                 placeholder="Оберіть учнів"
-                options={getSelectOption(studentsList)}
+                options={getSelectOption(availableStudents)}
                 onChange={(options) => handleSelectedStudents(options as MultiValue<SelectOption>)}
                 isMulti
                 required

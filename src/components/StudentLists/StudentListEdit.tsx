@@ -17,6 +17,7 @@ function StudentListEdit() {
   const { setShowModalStudentLists, showModalStudentListEdit, setShowModalStudentListEdit } =
     useModalStoreStore()
   const {
+    studentLists,
     studentListUuid,
     setStudentListUuid,
     getStudentListByUuid,
@@ -33,6 +34,14 @@ function StudentListEdit() {
   if (!studentList) {
     throw new Error('Student list not found')
   }
+
+  const studentsInOtherLists = studentLists
+    .filter((studentList) => studentList.uuid !== studentListUuid)
+    .flatMap((studentList) => studentList.students)
+
+  const availableStudents = studentsList.filter(
+    (student) => !studentsInOtherLists.some((s) => s === student)
+  )
 
   const [name, setName] = useState<string>(studentList?.name || '')
 
@@ -93,7 +102,7 @@ function StudentListEdit() {
                 className="mb-2"
                 placeholder="Оберіть учнів"
                 defaultValue={getSelectOption(studentList.students)}
-                options={getSelectOption(studentsList)}
+                options={getSelectOption(availableStudents)}
                 onChange={(options) => handleSelectedStudents(options as MultiValue<SelectOption>)}
                 isMulti
                 required
