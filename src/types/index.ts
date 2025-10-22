@@ -15,13 +15,14 @@ export type ToastType =
   | 'studentListDelete'
 
 export interface SelectOption {
-  value: string | number
+  value: string
   label: string
 }
 
 export interface StudentList {
-  id: number
-  className: string
+  uuid: string
+  classId: number
+  classLabel: string
   name: string
   students: string[]
 }

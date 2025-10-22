@@ -17,9 +17,9 @@ function StudentListEdit() {
   const { setShowModalStudentLists, showModalStudentListEdit, setShowModalStudentListEdit } =
     useModalStoreStore()
   const {
-    studentListId,
-    setStudentListId,
-    getStudentListById,
+    studentListUuid,
+    setStudentListUuid,
+    getStudentListByUuid,
     updateStudentList,
     isListNameExists,
     setSelectedStudentLists,
@@ -28,7 +28,7 @@ function StudentListEdit() {
   const { nameError, setNameError } = useFormErrorStore()
   const { setToast } = useToastStore()
 
-  const studentList = getStudentListById(studentListId)
+  const studentList = getStudentListByUuid(studentListUuid)
 
   if (!studentList) {
     throw new Error('Student list not found')
@@ -37,7 +37,7 @@ function StudentListEdit() {
   const [name, setName] = useState<string>(studentList?.name || '')
 
   const handleClose = () => {
-    setStudentListId(0)
+    setStudentListUuid('')
     setShowModalStudentListEdit(false)
     setShowModalStudentLists(true)
   }
@@ -45,12 +45,12 @@ function StudentListEdit() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    if (isListNameExists(name) && studentList.id !== studentListId) {
+    if (isListNameExists(name) && studentList.uuid !== studentListUuid) {
       setNameError('Список з такою назвою вже існує')
       return
     }
 
-    await updateStudentList(studentListId, name, selectedStudents)
+    await updateStudentList(studentListUuid, name, selectedStudents)
     setSelectedStudentLists([])
     setToast('studentListSave')
     handleClose()
@@ -73,7 +73,7 @@ function StudentListEdit() {
                   isInvalid={!!nameError}
                   placeholder="Введіть назву списку"
                   onChange={(e) => {
-                    setName(e.target.value.trim())
+                    setName(e.target.value)
                     setNameError('')
                   }}
                   required

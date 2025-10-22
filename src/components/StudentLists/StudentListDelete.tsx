@@ -9,27 +9,27 @@ function StudentListDelete() {
   const { setShowModalStudentLists, showModalStudentListDelete, setShowModalStudentListDelete } =
     useModalStoreStore()
   const {
-    studentListId,
-    getStudentListById,
-    setStudentListId,
+    studentListUuid,
+    getStudentListByUuid,
+    setStudentListUuid,
     removeStudentList,
     setSelectedStudentLists,
   } = useStudentListsStore()
   const { setToast } = useToastStore()
-  const studentList = getStudentListById(studentListId)
+  const studentList = getStudentListByUuid(studentListUuid)
 
   if (!studentList) {
     throw new Error('Student list not found')
   }
 
   const handleClose = () => {
-    setStudentListId(0)
+    setStudentListUuid('')
     setShowModalStudentListDelete(false)
     setShowModalStudentLists(true)
   }
 
   const handleConfirm = async () => {
-    await removeStudentList(studentListId)
+    await removeStudentList(studentListUuid)
     setSelectedStudentLists([])
     setToast('studentListDelete')
     handleClose()

@@ -17,7 +17,7 @@ export function StudentSelectTypeList({ children }: { children?: ReactNode }) {
   const { isSubmitting } = useAppStore()
   const { setShowModalStudentLists, setShowModalStudentListAdd } = useModalStoreStore()
   const { selectedStudentLists, handleSelectedStudentLists, studentLists } = useStudentListsStore()
-  const classStudentLists = studentLists.filter((studentList) => studentList.id === classId)
+  const classStudentLists = studentLists.filter((studentList) => studentList.classId === classId)
 
   return (
     <>

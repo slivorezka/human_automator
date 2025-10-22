@@ -4,10 +4,10 @@ import { Button, Card, Modal, Table } from 'react-bootstrap'
 import useModalStoreStore from '@/stores/useModalStoreStore'
 import useStudentListsStore from '@/stores/useStudentListsStore'
 import type { StudentList } from '@/types'
-import { getClassId, getClassName } from '@/utils/gradebook'
+import { getClassId, getClassLabel } from '@/utils/gradebook'
 
 function StudentLists() {
-  const className = getClassName()
+  const classLabel = getClassLabel()
   const classId = getClassId()
   const {
     setShowModalBasic,
@@ -17,9 +17,9 @@ function StudentLists() {
     setShowModalStudentListEdit,
     setShowModalStudentListDelete,
   } = useModalStoreStore()
-  const { studentLists, setStudentListId } = useStudentListsStore()
+  const { studentLists, setStudentListUuid } = useStudentListsStore()
 
-  const classStudentLists = studentLists.filter((studentList) => studentList.id === classId)
+  const classStudentLists = studentLists.filter((studentList) => studentList.classId === classId)
 
   const handleClose = () => {
     setShowModalStudentLists(false)
@@ -27,24 +27,24 @@ function StudentLists() {
   }
 
   const handleAdd = () => {
-    setStudentListId(0)
+    setStudentListUuid('')
     setShowModalStudentListAdd(true)
   }
 
   const handleEdit = (studentList: StudentList) => {
-    setStudentListId(studentList.id)
+    setStudentListUuid(studentList.uuid)
     setShowModalStudentListEdit(true)
   }
 
   const handleRemove = (studentList: StudentList) => {
-    setStudentListId(studentList.id)
+    setStudentListUuid(studentList.uuid)
     setShowModalStudentListDelete(true)
   }
 
   return (
     <Modal show={showModalStudentLists} onHide={handleClose} centered animation>
       <Modal.Header className="justify-content-center" closeButton>
-        <Modal.Title as="h5">Списки учнів {className}</Modal.Title>
+        <Modal.Title as="h5">Списки учнів {classLabel}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         {classStudentLists.length > 0 ? (

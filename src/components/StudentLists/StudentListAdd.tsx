@@ -10,22 +10,22 @@ import useStudentListsStore from '@/stores/useStudentListsStore'
 import useStudentsStore from '@/stores/useStudentsStore'
 import useToastStore from '@/stores/useToastStore'
 import type { SelectOption } from '@/types'
-import { getClassName } from '@/utils/gradebook'
+import { getClassLabel } from '@/utils/gradebook'
 import { getSelectOption } from '@/utils/helper'
 
 function StudentListAdd() {
   const animatedComponents = makeAnimated()
   const { setShowModalStudentLists, showModalStudentListAdd, setShowModalStudentListAdd } =
     useModalStoreStore()
-  const { setStudentListId, addStudentList, setSelectedStudentLists } = useStudentListsStore()
+  const { setStudentListUuid, addStudentList, setSelectedStudentLists } = useStudentListsStore()
   const { studentsList, selectedStudents, handleSelectedStudents } = useStudentsStore()
   const { nameError, setNameError } = useFormErrorStore()
   const { setToast } = useToastStore()
   const [name, setName] = useState<string>('')
-  const className = getClassName()
+  const classLabel = getClassLabel()
 
   const handleClose = () => {
-    setStudentListId(0)
+    setStudentListUuid('')
     setShowModalStudentListAdd(false)
     setShowModalStudentLists(true)
   }
@@ -49,7 +49,7 @@ function StudentListAdd() {
     <Modal show={showModalStudentListAdd} onHide={handleClose} centered animation>
       <Form onSubmit={handleSubmit}>
         <Modal.Header className="justify-content-center" closeButton>
-          <Modal.Title as="h5">Створювання нового списку учнів {className}</Modal.Title>
+          <Modal.Title as="h5">Створювання нового списку учнів {classLabel}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Card>
@@ -62,7 +62,7 @@ function StudentListAdd() {
                   isInvalid={!!nameError}
                   placeholder="Введіть назву списку"
                   onChange={(e) => {
-                    setName(e.target.value.trim())
+                    setName(e.target.value)
                     setNameError('')
                   }}
                   required

@@ -11,10 +11,16 @@ export const getCells = (): HTMLElement[] => [
 ]
 
 export const getClassId = (): number => {
-  return Number(new URL(document.location.href).pathname.split('/').at(-1))
+  try {
+    const classId = new URL(document.location.href).pathname.split('/').filter(Boolean).pop()
+
+    return classId ? Number(classId) : 0
+  } catch {
+    return 0
+  }
 }
 
-export const getClassName = (): string =>
+export const getClassLabel = (): string =>
   (document.querySelector('.group-switcher-title.label') as HTMLElement)?.innerText.trim()
 
 export const cellRating = (cell: HTMLElement): HTMLElement | null => {

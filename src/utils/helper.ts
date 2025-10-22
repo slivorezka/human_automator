@@ -44,7 +44,7 @@ export const getSelectListOption = (studentLists: StudentList[]): SelectOption[]
     .slice()
     .sort((a, b) => a.name.localeCompare(b.name))
     .map((studentList) => ({
-      value: studentList.id,
+      value: studentList.uuid,
       label: studentList.name,
     }))
 }
