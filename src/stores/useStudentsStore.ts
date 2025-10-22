@@ -23,7 +23,7 @@ const useStudentsStore = create<{
     useAppStore.getState().setCurrentPercent(fillPercent(students))
   },
   handleSelectedStudents: (studentOption: MultiValue<SelectOption>) => {
-    const students = studentOption.map((option) => option.value)
+    const students = studentOption.map((option) => option.label)
 
     get().setSelectedStudents(students)
     useFormErrorStore.getState().setPercentError('')

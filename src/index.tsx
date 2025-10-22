@@ -46,3 +46,26 @@ window.addEventListener('destroyHumanAutomator', () => {
 
   document.getElementById('human-automator')?.remove()
 })
+
+function onUrlChange(callback: () => void) {
+  const pushState = history.pushState
+  const replaceState = history.replaceState
+
+  // Patch both pushState and replaceState
+  history.pushState = function (...args) {
+    pushState.apply(this, args as any)
+    callback()
+  }
+  history.replaceState = function (...args) {
+    replaceState.apply(this, args as any)
+    callback()
+  }
+
+  // Also handle back/forward
+  window.addEventListener('popstate', callback)
+}
+
+// ✅ Example
+onUrlChange(() => {
+  console.log('URL changed:', location.href)
+})

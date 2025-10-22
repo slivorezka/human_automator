@@ -8,17 +8,20 @@ import useAppStore from '@/stores/useAppStore'
 import useModalStoreStore from '@/stores/useModalStoreStore'
 import useStudentListsStore from '@/stores/useStudentListsStore'
 import type { SelectOption } from '@/types'
+import { getClassId } from '@/utils/gradebook.ts'
 import { getSelectListOption } from '@/utils/helper'
 
 export function StudentSelectTypeList({ children }: { children?: ReactNode }) {
   const animatedComponents = makeAnimated()
+  const classId = getClassId()
   const { isSubmitting } = useAppStore()
   const { setShowModalStudentLists, setShowModalStudentListAdd } = useModalStoreStore()
   const { selectedStudentLists, handleSelectedStudentLists, studentLists } = useStudentListsStore()
+  const classStudentLists = studentLists.filter((studentList) => studentList.id === classId)
 
   return (
     <>
-      {studentLists?.length > 0 ? (
+      {classStudentLists?.length > 0 ? (
         <>
           <Card className="mt-3">
             <Card.Body>
@@ -27,7 +30,7 @@ export function StudentSelectTypeList({ children }: { children?: ReactNode }) {
                 className="mb-2"
                 placeholder="Оберіть список учнів"
                 defaultValue={getSelectListOption(selectedStudentLists)}
-                options={getSelectListOption(studentLists)}
+                options={getSelectListOption(classStudentLists)}
                 onChange={(options) =>
                   handleSelectedStudentLists(options as MultiValue<SelectOption>)
                 }

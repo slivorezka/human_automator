@@ -2,14 +2,16 @@ import type { MultiValue } from 'react-select'
 import { create } from 'zustand'
 
 import type { SelectOption, StudentList, StudentSelectType } from '@/types'
-import { className, fillPercent } from '@/utils/gradebook'
+import { fillPercent, getClassId, getClassName } from '@/utils/gradebook'
 
 import useAppStore from './useAppStore'
 import useFormErrorStore from './useFormErrorStore'
 import useStudentsStore from './useStudentsStore'
 
 const useStudentListsStore = create<{
-  studentListId: string
+  classId: number
+  className: string
+  studentListId: number
   studentLists: StudentList[]
   studentSelectType: StudentSelectType
   isStudentSelectTypeAll: boolean
@@ -19,18 +21,20 @@ const useStudentListsStore = create<{
   setStudentSelectType: (studentSelectType: StudentSelectType) => void
   handleSelectedStudentLists: (studentLists: MultiValue<SelectOption>) => void
   setStudentLists: (studentLists: StudentList[]) => void
-  setStudentListId: (id: string) => void
+  setStudentListId: (id: number) => void
   loadStudentLists: () => Promise<void>
   setSelectedStudentLists: (studentLists: StudentList[]) => void
-  getStudentListById: (id: string) => StudentList | undefined
+  getStudentListById: (id: number) => StudentList | undefined
   addStudentList: (name: string, students: string[]) => Promise<boolean>
-  updateStudentList: (id: string, name: string, students: string[]) => Promise<void>
-  removeStudentList: (id: string) => Promise<void>
+  updateStudentList: (id: number, name: string, students: string[]) => Promise<void>
+  removeStudentList: (id: number) => Promise<void>
   isListNameExists: (name: string) => boolean
   reset: () => void
 }>((set, get) => {
   return {
-    studentListId: '',
+    classId: getClassId(),
+    className: getClassName(),
+    studentListId: 0,
     studentSelectType: 'all',
     selectedStudentLists: [],
     studentLists: [],
@@ -39,19 +43,22 @@ const useStudentListsStore = create<{
     isStudentSelectTypeCustom: false,
     loadStudentLists: async () => {
       const result = await chrome.storage.local.get('humanAutomator')
-      get().setStudentLists(result.humanAutomator?.studentLists || [])
+
+      set({ studentLists: result.humanAutomator?.studentLists || [] })
     },
     handleSelectedStudentLists: (studentListsOption: MultiValue<SelectOption>) => {
       get().setSelectedStudentLists(
         studentListsOption
-          .map((option) => get().getStudentListById(option.value))
+          .map((option) => get().getStudentListById(Number(option.value)))
           .filter((s): s is StudentList => Boolean(s))
       )
 
       useFormErrorStore.getState().setPercentError('')
     },
     setStudentLists: (studentLists) => {
-      set({ studentLists: [...studentLists].sort((a, b) => a.name.localeCompare(b.name)) })
+      if (studentLists.length > 0) {
+        set({ studentLists: [...studentLists].sort((a, b) => a.name.localeCompare(b.name)) })
+      }
     },
     setStudentListId: (id) => set({ studentListId: id }),
     setSelectedStudentLists: (studentLists) => {
@@ -61,7 +68,7 @@ const useStudentListsStore = create<{
         .setCurrentPercent(fillPercent(studentLists.flatMap((studentList) => studentList.students)))
     },
     getStudentListById: (id) => {
-      return get().studentLists.find((list) => list.id === id)
+      return get().studentLists.find((studentList) => studentList.id === id)
     },
     addStudentList: async (name, students) => {
       if (get().isListNameExists(name)) {
@@ -72,8 +79,8 @@ const useStudentListsStore = create<{
         ...get().studentLists,
         {
           name,
-          className: className(),
-          id: crypto.randomUUID(),
+          className: get().className,
+          id: get().classId,
           students,
         },
       ]
@@ -91,7 +98,7 @@ const useStudentListsStore = create<{
 
       if (studentList) {
         const updatedStudentLists = [
-          ...get().studentLists.filter((list) => list.id !== id),
+          ...get().studentLists.filter((studentList) => studentList.id !== id),
           {
             ...studentList,
             name,
@@ -103,20 +110,35 @@ const useStudentListsStore = create<{
           humanAutomator: { studentLists: updatedStudentLists },
         })
 
-        get().setStudentLists(updatedStudentLists)
+        set({
+          studentLists: updatedStudentLists,
+        })
       }
     },
     removeStudentList: async (id) => {
-      const updatedLists = get().studentLists.filter((studentList) => studentList.id !== id)
+      const updatedLists = get().studentLists.filter((studentList) => !(studentList.id === id))
 
       await chrome.storage.local.set({
         humanAutomator: { studentLists: updatedLists },
       })
 
-      get().setStudentLists(updatedLists)
+      set({
+        studentLists: [...updatedLists].sort((a, b) => a.name.localeCompare(b.name)),
+      })
+
+      const selectedStudentLists = get().selectedStudentLists.filter(
+        (studentList) => !(studentList.id === id)
+      )
+
+      if (selectedStudentLists.length !== get().selectedStudentLists.length) {
+        get().setSelectedStudentLists(selectedStudentLists)
+      }
     },
     isListNameExists: (name) => {
-      return get().studentLists.some((list) => list.name.toLowerCase() === name.toLowerCase())
+      return get().studentLists.some(
+        (studentList) =>
+          studentList.id === get().classId && studentList.name.toLowerCase() === name.toLowerCase()
+      )
     },
     setStudentSelectType: (studentSelectType) => {
       set({
@@ -140,7 +162,9 @@ const useStudentListsStore = create<{
     },
     reset: () =>
       set({
-        studentListId: '',
+        classId: getClassId(),
+        className: getClassName(),
+        studentListId: 0,
         studentSelectType: 'all',
         selectedStudentLists: [],
         studentLists: [],

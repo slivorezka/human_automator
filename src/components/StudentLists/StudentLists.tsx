@@ -4,9 +4,11 @@ import { Button, Card, Modal, Table } from 'react-bootstrap'
 import useModalStoreStore from '@/stores/useModalStoreStore'
 import useStudentListsStore from '@/stores/useStudentListsStore'
 import type { StudentList } from '@/types'
-import { className } from '@/utils/gradebook'
+import { getClassId, getClassName } from '@/utils/gradebook'
 
 function StudentLists() {
+  const className = getClassName()
+  const classId = getClassId()
   const {
     setShowModalBasic,
     showModalStudentLists,
@@ -15,11 +17,9 @@ function StudentLists() {
     setShowModalStudentListEdit,
     setShowModalStudentListDelete,
   } = useModalStoreStore()
-  const {
-    studentLists,
+  const { studentLists, setStudentListId } = useStudentListsStore()
 
-    setStudentListId,
-  } = useStudentListsStore()
+  const classStudentLists = studentLists.filter((studentList) => studentList.id === classId)
 
   const handleClose = () => {
     setShowModalStudentLists(false)
@@ -27,7 +27,7 @@ function StudentLists() {
   }
 
   const handleAdd = () => {
-    setStudentListId('')
+    setStudentListId(0)
     setShowModalStudentListAdd(true)
   }
 
@@ -44,10 +44,10 @@ function StudentLists() {
   return (
     <Modal show={showModalStudentLists} onHide={handleClose} centered animation>
       <Modal.Header className="justify-content-center" closeButton>
-        <Modal.Title as="h5">Списки учнів {className()}</Modal.Title>
+        <Modal.Title as="h5">Списки учнів {className}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        {studentLists.length > 0 ? (
+        {classStudentLists.length > 0 ? (
           <Table className="mb-0" responsive bordered hover>
             <thead className="text-center">
               <tr>
@@ -57,7 +57,7 @@ function StudentLists() {
               </tr>
             </thead>
             <tbody>
-              {studentLists.map((studentList) => (
+              {classStudentLists.map((studentList) => (
                 <tr>
                   <td className="fw-bold">{studentList.name}</td>
                   <td className="text-center fw-bold">{studentList.students.length}</td>

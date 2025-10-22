@@ -23,7 +23,7 @@ function StudentListDelete() {
   }
 
   const handleClose = () => {
-    setStudentListId('')
+    setStudentListId(0)
     setShowModalStudentListDelete(false)
     setShowModalStudentLists(true)
   }

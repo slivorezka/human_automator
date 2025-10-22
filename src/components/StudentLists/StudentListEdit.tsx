@@ -37,7 +37,7 @@ function StudentListEdit() {
   const [name, setName] = useState<string>(studentList?.name || '')
 
   const handleClose = () => {
-    setStudentListId('')
+    setStudentListId(0)
     setShowModalStudentListEdit(false)
     setShowModalStudentLists(true)
   }

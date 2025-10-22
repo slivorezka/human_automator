@@ -10,7 +10,11 @@ export const getCells = (): HTMLElement[] => [
   ) as unknown as HTMLElement[]),
 ]
 
-export const className = (): string =>
+export const getClassId = (): number => {
+  return Number(new URL(document.location.href).pathname.split('/').at(-1))
+}
+
+export const getClassName = (): string =>
   (document.querySelector('.group-switcher-title.label') as HTMLElement)?.innerText.trim()
 
 export const cellRating = (cell: HTMLElement): HTMLElement | null => {

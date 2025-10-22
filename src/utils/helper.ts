@@ -38,7 +38,9 @@ export const getSelectOption = (items: string[]): SelectOption[] => {
 }
 
 export const getSelectListOption = (studentLists: StudentList[]): SelectOption[] => {
-  return studentLists
+  if (studentLists.length === 0) return []
+
+  return [...studentLists]
     .slice()
     .sort((a, b) => a.name.localeCompare(b.name))
     .map((studentList) => ({

@@ -10,7 +10,7 @@ import useStudentListsStore from '@/stores/useStudentListsStore'
 import useStudentsStore from '@/stores/useStudentsStore'
 import useToastStore from '@/stores/useToastStore'
 import type { SelectOption } from '@/types'
-import { className } from '@/utils/gradebook'
+import { getClassName } from '@/utils/gradebook'
 import { getSelectOption } from '@/utils/helper'
 
 function StudentListAdd() {
@@ -22,10 +22,10 @@ function StudentListAdd() {
   const { nameError, setNameError } = useFormErrorStore()
   const { setToast } = useToastStore()
   const [name, setName] = useState<string>('')
-  const nameClass = className()
+  const className = getClassName()
 
   const handleClose = () => {
-    setStudentListId('')
+    setStudentListId(0)
     setShowModalStudentListAdd(false)
     setShowModalStudentLists(true)
   }
@@ -49,7 +49,7 @@ function StudentListAdd() {
     <Modal show={showModalStudentListAdd} onHide={handleClose} centered animation>
       <Form onSubmit={handleSubmit}>
         <Modal.Header className="justify-content-center" closeButton>
-          <Modal.Title as="h5">Створювання нового списку учнів {nameClass}</Modal.Title>
+          <Modal.Title as="h5">Створювання нового списку учнів {className}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Card>
