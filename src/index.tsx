@@ -1,4 +1,5 @@
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'
+import 'react-datepicker/dist/react-datepicker.css'
 import '@/scss/style.scss'
 
 import { StrictMode } from 'react'
@@ -7,6 +8,7 @@ import { createRoot, type Root } from 'react-dom/client'
 import App from '@/App'
 import useActionStore from '@/stores/useActionStore'
 import useAppStore from '@/stores/useAppStore'
+import useDateStore from '@/stores/useDateStore'
 import useFormErrorStore from '@/stores/useFormErrorStore'
 import useModalStoreStore from '@/stores/useModalStoreStore'
 import useStudentListsStore from '@/stores/useStudentListsStore'
@@ -17,11 +19,12 @@ let rootHumanAutomator: Root | null
 
 window.addEventListener('runHumanAutomator', async () => {
   useStudentsStore.getState().loadStudentsList()
+  useDateStore.getState().loadDates()
 
   await useStudentListsStore.getState().loadStudentLists()
 
   const app = document.createElement('div')
-  app.id = 'human-automator'
+  app.id = 'human-automator-app'
   document.body.append(app)
 
   rootHumanAutomator = createRoot(app)
@@ -38,34 +41,12 @@ window.addEventListener('destroyHumanAutomator', () => {
 
   useActionStore.getState().reset()
   useAppStore.getState().reset()
+  useDateStore.getState().reset()
   useFormErrorStore.getState().reset()
   useModalStoreStore.getState().reset()
   useStudentListsStore.getState().reset()
   useStudentsStore.getState().reset()
   useToastStore.getState().reset()
 
-  document.getElementById('human-automator')?.remove()
-})
-
-function onUrlChange(callback: () => void) {
-  const pushState = history.pushState
-  const replaceState = history.replaceState
-
-  // Patch both pushState and replaceState
-  history.pushState = function (...args) {
-    pushState.apply(this, args as any)
-    callback()
-  }
-  history.replaceState = function (...args) {
-    replaceState.apply(this, args as any)
-    callback()
-  }
-
-  // Also handle back/forward
-  window.addEventListener('popstate', callback)
-}
-
-// ✅ Example
-onUrlChange(() => {
-  console.log('URL changed:', location.href)
+  document.getElementById('human-automator-app')?.remove()
 })

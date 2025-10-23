@@ -1,3 +1,71 @@
+function translateUkrainianDate(text: string | undefined): string | undefined {
+  const ukToEnDays: Record<string, string> = {
+    Понеділок: 'Monday',
+    Вівторок: 'Tuesday',
+    Середа: 'Wednesday',
+    Четвер: 'Thursday',
+    'П’ятниця': 'Friday',
+  }
+
+  const ukToEnMonths: Record<string, string> = {
+    січня: 'January',
+    лютого: 'February',
+    березня: 'March',
+    квітня: 'April',
+    травня: 'May',
+    червня: 'June',
+    липня: 'July',
+    серпня: 'August',
+    вересня: 'September',
+    жовтня: 'October',
+    листопада: 'November',
+    грудня: 'December',
+  }
+
+  for (const [uk, en] of Object.entries(ukToEnDays)) {
+    text = text?.replace(new RegExp(uk, 'i'), en)
+  }
+
+  for (const [uk, en] of Object.entries(ukToEnMonths)) {
+    text = text?.replace(new RegExp(uk, 'i'), en)
+  }
+
+  return text?.replace('-го', '')
+}
+
+export const getDates = (): {
+  startDate: Date | undefined
+  endDate: Date | undefined
+} => {
+  const dates = document.querySelectorAll(
+    '.g-main-header__date.gradebook-narrow__header-date.date.date--smaller'
+  ) as unknown as HTMLElement[]
+
+  const first = dates.length > 0 ? dates[0] : null
+  const last = dates.length > 0 ? dates[dates.length - 1] : null
+
+  const firstDate = translateUkrainianDate(
+    first
+      ?.getAttribute('data-awesome-tooltip')
+      ?.replace(/^Урок:\s*|\s*,\s*\d{1,2}:\d{2}$/g, '')
+      .trim()
+  )
+
+  const lastDate = translateUkrainianDate(
+    last
+      ?.getAttribute('data-awesome-tooltip')
+      ?.replace(/^Урок:\s*|\s*,\s*\d{1,2}:\d{2}$/g, '')
+      .trim()
+  )
+
+  const year = new Date().getFullYear()
+
+  return {
+    startDate: firstDate ? new Date(`${firstDate} ${year}`) : undefined,
+    endDate: lastDate ? new Date(`${lastDate} ${year}`) : undefined,
+  }
+}
+
 export const getRows = (): HTMLElement[] => [
   ...(document.querySelectorAll(
     '.gradebook-container__table2-outlet .gradebook-container__table2-row'

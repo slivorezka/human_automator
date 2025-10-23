@@ -8,3 +8,4 @@ export const TIMING = {
   DESTROY_APP_DELAY: 1000,
   DESTROY_TOAST_APP_DELAY: 3000,
 }
+export const DATE_FORMAT = 'dd.MM.yyyy'

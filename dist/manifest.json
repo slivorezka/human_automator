@@ -14,13 +14,14 @@
     "128": "icons/16.png"
   },
   "background": {
-    "service_worker": "background-PbIaB20D.js",
+    "service_worker": "background-D_annzIj.js",
     "type": "module"
   },
   "permissions": [
     "storage",
     "scripting",
-    "activeTab"
+    "activeTab",
+    "webNavigation"
   ],
   "host_permissions": [
     "<all_urls>"

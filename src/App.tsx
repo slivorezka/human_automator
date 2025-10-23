@@ -1,6 +1,7 @@
 import { Play, X } from 'lucide-react'
 import { type FormEvent } from 'react'
 import { Button, Card, Form, InputGroup, Modal, ProgressBar } from 'react-bootstrap'
+import DatePicker from 'react-datepicker'
 import { RotatingLines } from 'react-loader-spinner'
 
 import Description from '@/components/Description'
@@ -16,10 +17,11 @@ import {
   StudentSelectTypeCustom,
   StudentSelectTypeList,
 } from '@/components/StudentSelectType'
-import { EXAMPLE_RATING, MAX_RATING, MIN_RATING } from '@/constants/config'
+import { DATE_FORMAT, EXAMPLE_RATING, MAX_RATING, MIN_RATING } from '@/constants/config'
 import useProcessing from '@/hooks/useProcessing'
 import useActionStore from '@/stores/useActionStore'
 import useAppStore from '@/stores/useAppStore'
+import useDateStore from '@/stores/useDateStore'
 import useFormErrorStore from '@/stores/useFormErrorStore'
 import useModalStoreStore from '@/stores/useModalStoreStore'
 import useStudentListsStore from '@/stores/useStudentListsStore'
@@ -32,6 +34,7 @@ import {
   cellsNarrow,
   fillPercent,
   getCells,
+  getDates,
   getRows,
   rating,
   ratingComment,
@@ -71,6 +74,8 @@ function App() {
     setCurrentPercent,
   } = useAppStore()
 
+  const { minDate, maxDate, startDate, endDate, setStartDate, setEndDate } = useDateStore()
+
   const { ratingError, setRatingError, percentError, setPercentError } = useFormErrorStore()
   const { selectedStudents, setSelectedStudents } = useStudentsStore()
 
@@ -86,6 +91,8 @@ function App() {
 
   const { action, setAction, isSetRating, isDeleteRating, isCountRating } = useActionStore()
   const { processItem } = useProcessing()
+
+  console.info(getDates())
 
   const handleStop = (status: ToastType) => {
     setProcessing(false)
@@ -469,6 +476,48 @@ function App() {
                       <span className="fw-bold">Оберіть учнів</span> яким бажаєте виставити оцінки
                     </StudentSelectTypeCustom>
                   )}
+                  <Card className="mt-3">
+                    <Card.Body>
+                      <Form.Group>
+                        <Form.Label className="fw-bold">Дата початку</Form.Label>
+                        <InputGroup className="mb-2">
+                          <DatePicker
+                            minDate={minDate}
+                            maxDate={endDate}
+                            selected={startDate}
+                            onChange={(date) => setStartDate(date ?? undefined)}
+                            className="form-control"
+                            dateFormat={DATE_FORMAT}
+                            placeholderText="Оберіть дату початку"
+                            required
+                          />
+                        </InputGroup>
+                        <Form.Text>
+                          Оберіть <span className="fw-bold">дату початку</span>, з якої бажаєте
+                          діяти, включно
+                        </Form.Text>
+                      </Form.Group>
+                      <Form.Group className="mt-3">
+                        <Form.Label className="fw-bold">Дата закінчення</Form.Label>
+                        <InputGroup className="mb-2">
+                          <DatePicker
+                            minDate={startDate}
+                            maxDate={maxDate}
+                            selected={endDate}
+                            onChange={(date) => setEndDate(date ?? undefined)}
+                            className="form-control"
+                            dateFormat={DATE_FORMAT}
+                            placeholderText="Оберіть дату закінчення"
+                            required
+                          />
+                        </InputGroup>
+                        <Form.Text>
+                          Оберіть <span className="fw-bold">дату закінчення</span>, до якої бажаєте
+                          діяти, включно
+                        </Form.Text>
+                      </Form.Group>
+                    </Card.Body>
+                  </Card>
                   <Card className="mt-3">
                     <Card.Body>
                       <Form.Group>

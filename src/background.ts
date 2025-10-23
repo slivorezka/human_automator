@@ -1,28 +1,35 @@
-chrome.action.onClicked.addListener(async (tab: chrome.tabs.Tab) => {
-  if (!tab.id) return
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.scripting.registerContentScripts([
+    {
+      id: 'human-automator',
+      css: ['style.css'],
+      js: ['index.js'],
+      matches: ['*://*.human.ua/*'],
+      runAt: 'document_end',
+    },
+  ])
+})
 
-  const key = `human_automator_${tab.id}`
-  const result = await chrome.storage.session.get(key)
+chrome.webNavigation.onCompleted.addListener(async (details) => {
+  if (details.frameId !== 0) return
 
-  if (!result[key]) {
-    await chrome.scripting.insertCSS({
-      target: { tabId: tab.id },
-      files: ['style.css'],
-    })
-
-    await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      files: ['index.js'],
-    })
-  }
-
-  await chrome.storage.session.set({ [key]: true })
+  const logoUrl = chrome.runtime.getURL('icons/logo.svg')
+  const response = await fetch(logoUrl)
+  const svgContent = await response.text()
 
   await chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    func: () => {
-      window.dispatchEvent(new CustomEvent('destroyHumanAutomator'))
-      window.dispatchEvent(new CustomEvent('runHumanAutomator'))
+    target: { tabId: details.tabId },
+    args: [svgContent],
+    func: (svg) => {
+      const humanAutomator = document.createElement('div')
+      humanAutomator.id = 'human-automator'
+      humanAutomator.innerHTML = svg
+      document.body.appendChild(humanAutomator)
+
+      humanAutomator.addEventListener('click', () => {
+        window.dispatchEvent(new CustomEvent('destroyHumanAutomator'))
+        window.dispatchEvent(new CustomEvent('runHumanAutomator'))
+      })
     },
   })
 })

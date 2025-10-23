@@ -76,9 +76,11 @@
         margin-top: 0.1rem;
       }
     }
+
+    .react-datepicker-wrapper {
+      width: 100%;
+    }
   }
-
-
 
   .card-body {
     p {
@@ -91,6 +93,29 @@
   }
 }
 
+#human-automator svg {
+  &:hover {
+    opacity: 1;
+  }
+  opacity: .5;
+  cursor: pointer;
+  padding: 0.5rem;
+  right: 0;
+  bottom: 1rem;
+  position: fixed;
+  transform: translateX(-50%);
+  z-index: 5;
+  background: #fff;
+  border: 1px solid #eef0f2;
+  border-radius: 25px;
+  box-shadow: 0 10px 45px rgba(158, 170, 187, .2);
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+  animation: fadeIn 0.5s ease-in;
+  transition: opacity 0.3s ease;
+}
 
 .input-group:not(.has-validation) > .dropdown-toggle:nth-last-child(n+3),
 .input-group:not(.has-validation) > .form-floating:not(:last-child) > .form-control,
@@ -98,4 +123,13 @@
 .input-group:not(.has-validation) > :not(:last-child):not(.dropdown-toggle):not(.dropdown-menu):not(.form-floating) {
   border-top-right-radius: var(--bs-border-radius);
   border-bottom-right-radius: var(--bs-border-radius);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: .5;
+  }
 }
