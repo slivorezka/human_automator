@@ -239,6 +239,7 @@ function App() {
         for (const cell of [...cellsNarrow(row)]) {
           if (removeAllRating) {
             if (
+              isCellInDates(cellsWithDates, cell, startDate, endDate) &&
               ratingComment(cell as HTMLElement) &&
               !cellAbsent(cell as HTMLElement) &&
               rating(cell as HTMLElement)
@@ -247,6 +248,7 @@ function App() {
             }
           } else {
             if (
+              isCellInDates(cellsWithDates, cell, startDate, endDate) &&
               ratingComment(cell as HTMLElement) &&
               !cellAbsent(cell as HTMLElement) &&
               removeRating === rating(cell as HTMLElement)
@@ -679,6 +681,54 @@ function App() {
                       <span className="fw-bold">Оберіть учнів</span>, яким бажаєте видалити оцінки
                     </StudentSelectTypeCustom>
                   )}
+                  <Card className="mt-3">
+                    <Card.Body>
+                      <Form.Group>
+                        <Form.Label className="fw-bold">Дата початку</Form.Label>
+                        <InputGroup className="mb-2">
+                          <DatePicker
+                            filterDate={(date) => {
+                              return dates.some((d) => d.toDateString() === date.toDateString())
+                            }}
+                            minDate={minDate}
+                            maxDate={endDate}
+                            selected={startDate}
+                            onChange={(date) => setStartDate(date ?? undefined)}
+                            className="form-control"
+                            dateFormat={DATE_FORMAT}
+                            placeholderText="Оберіть дату початку"
+                            required
+                          />
+                        </InputGroup>
+                        <Form.Text>
+                          Оберіть <span className="fw-bold">дату початку</span>, з якої бажаєте
+                          діяти, включно
+                        </Form.Text>
+                      </Form.Group>
+                      <Form.Group className="mt-3">
+                        <Form.Label className="fw-bold">Дата закінчення</Form.Label>
+                        <InputGroup className="mb-2">
+                          <DatePicker
+                            filterDate={(date) => {
+                              return dates.some((d) => d.toDateString() === date.toDateString())
+                            }}
+                            minDate={startDate}
+                            maxDate={maxDate}
+                            selected={endDate}
+                            onChange={(date) => setEndDate(date ?? undefined)}
+                            className="form-control"
+                            dateFormat={DATE_FORMAT}
+                            placeholderText="Оберіть дату закінчення"
+                            required
+                          />
+                        </InputGroup>
+                        <Form.Text>
+                          Оберіть <span className="fw-bold">дату закінчення</span>, до якої бажаєте
+                          діяти, включно
+                        </Form.Text>
+                      </Form.Group>
+                    </Card.Body>
+                  </Card>
                   {!removeAllRating && (
                     <Card className="mt-3">
                       <Card.Body>
