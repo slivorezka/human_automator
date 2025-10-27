@@ -78,7 +78,7 @@ function StudentListAdd() {
               </InputGroup>
               <Form.Text>
                 <span className="fw-bold">Оберіть назву</span> для цього списку, наприклад,
-                <span className="fw-bold"> Відмінники</span>
+                <span className="fw-bold"> Закордонники</span>
               </Form.Text>
             </Card.Body>
           </Card>

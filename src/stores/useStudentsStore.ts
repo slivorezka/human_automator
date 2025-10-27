@@ -2,10 +2,11 @@ import type { MultiValue } from 'react-select'
 import { create } from 'zustand'
 
 import type { SelectOption } from '@/types'
-import { fillPercent } from '@/utils/gradebook'
+import { fillPercent, getCellsWithDates } from '@/utils/gradebook'
 import { students } from '@/utils/gradebook'
 
 import useAppStore from './useAppStore'
+import useDateStore from './useDateStore'
 import useFormErrorStore from './useFormErrorStore'
 
 const useStudentsStore = create<{
@@ -20,7 +21,16 @@ const useStudentsStore = create<{
   selectedStudents: [],
   setSelectedStudents: (students) => {
     set({ selectedStudents: students })
-    useAppStore.getState().setCurrentPercent(fillPercent(students))
+    useAppStore
+      .getState()
+      .setCurrentPercent(
+        fillPercent(
+          students,
+          getCellsWithDates(useDateStore.getState().dates),
+          useDateStore.getState().startDate,
+          useDateStore.getState().endDate
+        )
+      )
   },
   handleSelectedStudents: (studentOption: MultiValue<SelectOption>) => {
     const students = studentOption.map((option) => option.label)

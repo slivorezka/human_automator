@@ -34,8 +34,9 @@ import {
   cellsNarrow,
   fillPercent,
   getCells,
-  getDates,
+  getCellsWithDates,
   getRows,
+  isCellInDates,
   rating,
   ratingComment,
   studentName,
@@ -74,8 +75,7 @@ function App() {
     setCurrentPercent,
   } = useAppStore()
 
-  const { minDate, maxDate, startDate, endDate, setStartDate, setEndDate } = useDateStore()
-
+  const { dates, minDate, maxDate, startDate, endDate, setStartDate, setEndDate } = useDateStore()
   const { ratingError, setRatingError, percentError, setPercentError } = useFormErrorStore()
   const { selectedStudents, setSelectedStudents } = useStudentsStore()
 
@@ -91,8 +91,6 @@ function App() {
 
   const { action, setAction, isSetRating, isDeleteRating, isCountRating } = useActionStore()
   const { processItem } = useProcessing()
-
-  console.info(getDates())
 
   const handleStop = (status: ToastType) => {
     setProcessing(false)
@@ -123,10 +121,15 @@ function App() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
+    if (!minDate || !maxDate || !startDate || !endDate) {
+      throw new Error('Dates are not defined')
+    }
+
     toolPanel(true)
     cellRemoveSelected(true)
 
     let students: string[] = []
+    const cellsWithDates = getCellsWithDates(dates)
 
     if (isStudentSelectTypeList && selectedStudentLists.length > 0) {
       students = selectedStudentLists.flatMap((studentList) => studentList.students)
@@ -158,6 +161,7 @@ function App() {
             if (studentList.students.some((student) => student === studentName(row))) {
               for (const cell of [...cellsNarrow(row)]) {
                 if (
+                  isCellInDates(cellsWithDates, cell, startDate, endDate) &&
                   ratingComment(cell as HTMLElement) &&
                   !cellAbsent(cell as HTMLElement) &&
                   !rating(cell as HTMLElement)
@@ -175,6 +179,7 @@ function App() {
           if (selectedStudents.find((student) => student === studentName(row))) {
             for (const cell of [...cellsNarrow(row)]) {
               if (
+                isCellInDates(cellsWithDates, cell, startDate, endDate) &&
                 ratingComment(cell as HTMLElement) &&
                 !cellAbsent(cell as HTMLElement) &&
                 !rating(cell as HTMLElement)
@@ -189,6 +194,7 @@ function App() {
       if (isStudentSelectTypeAll) {
         for (const cell of getCells()) {
           if (
+            isCellInDates(cellsWithDates, cell, startDate, endDate) &&
             ratingComment(cell as HTMLElement) &&
             !cellAbsent(cell as HTMLElement) &&
             !rating(cell as HTMLElement)
@@ -198,7 +204,7 @@ function App() {
         }
       }
 
-      setCurrentPercent(fillPercent(students))
+      setCurrentPercent(fillPercent(students, cellsWithDates, startDate, endDate))
 
       for (const cell of shuffleArray(emptyCells)) {
         await processItem({
@@ -207,7 +213,7 @@ function App() {
           maxRating,
         })
 
-        const percent = fillPercent(students)
+        const percent = fillPercent(students, cellsWithDates, startDate, endDate)
 
         setCurrentPercent(percent)
 
@@ -275,7 +281,7 @@ function App() {
         }
       }
 
-      setCurrentPercent(fillPercent(students))
+      setCurrentPercent(fillPercent(students, cellsWithDates, startDate, endDate))
 
       for (const cell of cells) {
         await processItem({
@@ -283,7 +289,7 @@ function App() {
           remove: true,
         })
 
-        setCurrentPercent(fillPercent(students))
+        setCurrentPercent(fillPercent(students, cellsWithDates, startDate, endDate))
 
         if (!useAppStore.getState().isProcessing) {
           return
@@ -482,6 +488,9 @@ function App() {
                         <Form.Label className="fw-bold">Дата початку</Form.Label>
                         <InputGroup className="mb-2">
                           <DatePicker
+                            filterDate={(date) => {
+                              return dates.some((d) => d.toDateString() === date.toDateString())
+                            }}
                             minDate={minDate}
                             maxDate={endDate}
                             selected={startDate}
@@ -501,6 +510,9 @@ function App() {
                         <Form.Label className="fw-bold">Дата закінчення</Form.Label>
                         <InputGroup className="mb-2">
                           <DatePicker
+                            filterDate={(date) => {
+                              return dates.some((d) => d.toDateString() === date.toDateString())
+                            }}
                             minDate={startDate}
                             maxDate={maxDate}
                             selected={endDate}

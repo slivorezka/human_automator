@@ -1,4 +1,6 @@
-function translateUkrainianDate(text: string | undefined): string | undefined {
+import { chunkArray } from '@/utils/helper.ts'
+
+const translateUkrainianDate = (text: string | undefined): string | undefined => {
   const ukToEnDays: Record<string, string> = {
     Понеділок: 'Monday',
     Вівторок: 'Tuesday',
@@ -33,37 +35,89 @@ function translateUkrainianDate(text: string | undefined): string | undefined {
   return text?.replace('-го', '')
 }
 
+const getDateString = (item: HTMLElement): string | undefined => {
+  return item
+    ?.getAttribute('data-awesome-tooltip')
+    ?.replace(/^Урок:\s*|\s*,\s*\d{1,2}:\d{2}$/g, '')
+    .trim()
+}
+
 export const getDates = (): {
+  dates: Date[]
   startDate: Date | undefined
   endDate: Date | undefined
 } => {
-  const dates = document.querySelectorAll(
-    '.g-main-header__date.gradebook-narrow__header-date.date.date--smaller'
-  ) as unknown as HTMLElement[]
+  const dates = Array.from(
+    document.querySelectorAll(
+      '.g-main-header__date.gradebook-narrow__header-date.date.date--smaller'
+    )
+  ) as HTMLElement[]
 
-  const first = dates.length > 0 ? dates[0] : null
-  const last = dates.length > 0 ? dates[dates.length - 1] : null
-
-  const firstDate = translateUkrainianDate(
-    first
-      ?.getAttribute('data-awesome-tooltip')
-      ?.replace(/^Урок:\s*|\s*,\s*\d{1,2}:\d{2}$/g, '')
-      .trim()
-  )
-
-  const lastDate = translateUkrainianDate(
-    last
-      ?.getAttribute('data-awesome-tooltip')
-      ?.replace(/^Урок:\s*|\s*,\s*\d{1,2}:\d{2}$/g, '')
-      .trim()
-  )
+  const firstDate = dates.length > 0 ? translateUkrainianDate(getDateString(dates[0])) : undefined
+  const lastDate =
+    dates.length > 0 ? translateUkrainianDate(getDateString(dates[dates.length - 1])) : undefined
 
   const year = new Date().getFullYear()
 
   return {
+    dates: dates
+      ? dates
+          .map((date) => {
+            const data = translateUkrainianDate(
+              date
+                ?.getAttribute('data-awesome-tooltip')
+                ?.replace(/^Урок:\s*|\s*,\s*\d{1,2}:\d{2}$/g, '')
+                .trim()
+            )
+            return data ? new Date(`${data} ${year}`) : undefined
+          })
+          .filter((d): d is Date => Boolean(d))
+      : [],
     startDate: firstDate ? new Date(`${firstDate} ${year}`) : undefined,
     endDate: lastDate ? new Date(`${lastDate} ${year}`) : undefined,
   }
+}
+
+export const isCellInDates = (
+  cells: { date: Date; cell: HTMLElement }[],
+  cell: HTMLElement,
+  minDate: Date,
+  maxDate: Date
+): boolean => {
+  return cells.some(
+    (item) =>
+      item.cell === cell &&
+      item.date.getTime() >= minDate.getTime() &&
+      item.date.getTime() <= maxDate.getTime()
+  )
+}
+
+export function getCellsWithDates(dates: Date[]): {
+  date: Date
+  cell: HTMLElement
+}[] {
+  const allCells: HTMLElement[] = []
+  const data: {
+    date: Date
+    cell: HTMLElement
+  }[] = []
+
+  for (const cell of getCells()) {
+    if (ratingComment(cell as HTMLElement)) {
+      allCells.push(cell as HTMLElement)
+    }
+  }
+
+  data.push(
+    ...chunkArray(allCells, 2).flatMap((cells, index) => {
+      const dateIndex = index % dates.length
+      const date = dates[dateIndex]
+
+      return date ? cells.map((cell) => ({ date, cell })) : []
+    })
+  )
+
+  return data
 }
 
 export const getRows = (): HTMLElement[] => [
@@ -120,7 +174,12 @@ export const students = (): string[] => {
   return getRows().map((row) => studentName(row))
 }
 
-export const fillPercent = (students?: string[]): number => {
+export const fillPercent = (
+  students?: string[],
+  cells?: { date: Date; cell: HTMLElement }[],
+  minDate?: Date,
+  maxDate?: Date
+): number => {
   const filedCells = []
   const emptyCells = []
 
@@ -128,20 +187,42 @@ export const fillPercent = (students?: string[]): number => {
     for (const row of getRows()) {
       if (students.find((student) => student === studentName(row))) {
         for (const cell of [...cellsNarrow(row)]) {
-          if (
-            ratingComment(cell as HTMLElement) &&
-            !cellAbsent(cell as HTMLElement) &&
-            rating(cell as HTMLElement)
-          ) {
-            filedCells.push(cell)
+          if (cells && minDate && maxDate) {
+            if (
+              isCellInDates(cells, cell, minDate, maxDate) &&
+              ratingComment(cell as HTMLElement) &&
+              !cellAbsent(cell as HTMLElement) &&
+              rating(cell as HTMLElement)
+            ) {
+              filedCells.push(cell)
+            }
+          } else {
+            if (
+              ratingComment(cell as HTMLElement) &&
+              !cellAbsent(cell as HTMLElement) &&
+              rating(cell as HTMLElement)
+            ) {
+              filedCells.push(cell)
+            }
           }
 
-          if (
-            ratingComment(cell as HTMLElement) &&
-            !cellAbsent(cell as HTMLElement) &&
-            !rating(cell as HTMLElement)
-          ) {
-            emptyCells.push(cell)
+          if (cells && minDate && maxDate) {
+            if (
+              isCellInDates(cells, cell, minDate, maxDate) &&
+              ratingComment(cell as HTMLElement) &&
+              !cellAbsent(cell as HTMLElement) &&
+              !rating(cell as HTMLElement)
+            ) {
+              emptyCells.push(cell)
+            }
+          } else {
+            if (
+              ratingComment(cell as HTMLElement) &&
+              !cellAbsent(cell as HTMLElement) &&
+              !rating(cell as HTMLElement)
+            ) {
+              emptyCells.push(cell)
+            }
           }
         }
       }

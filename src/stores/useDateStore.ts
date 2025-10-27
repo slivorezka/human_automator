@@ -1,8 +1,11 @@
 import { create } from 'zustand'
 
-import { getDates } from '@/utils/gradebook'
+import useAppStore from '@/stores/useAppStore'
+import useStudentsStore from '@/stores/useStudentsStore'
+import { fillPercent, getCellsWithDates, getDates } from '@/utils/gradebook'
 
 const useDateStore = create<{
+  dates: Date[]
   minDate: Date | undefined
   maxDate: Date | undefined
   startDate: Date | undefined
@@ -11,21 +14,50 @@ const useDateStore = create<{
   setEndDate: (date: Date | undefined) => void
   reset: () => void
   loadDates: () => void
-}>((set) => ({
+}>((set, get) => ({
+  dates: [],
   minDate: undefined,
   maxDate: undefined,
   startDate: undefined,
   endDate: undefined,
-  setStartDate: (date) => set({ startDate: date }),
-  setEndDate: (date) => set({ endDate: date }),
+  setStartDate: (date) => {
+    set({ startDate: date })
+
+    useAppStore
+      .getState()
+      .setCurrentPercent(
+        fillPercent(
+          useStudentsStore.getState().studentsList,
+          getCellsWithDates(get().dates),
+          get().startDate,
+          get().endDate
+        )
+      )
+  },
+  setEndDate: (date) => {
+    set({ endDate: date })
+
+    useAppStore
+      .getState()
+      .setCurrentPercent(
+        fillPercent(
+          useStudentsStore.getState().studentsList,
+          getCellsWithDates(get().dates),
+          get().startDate,
+          get().endDate
+        )
+      )
+  },
   loadDates: () => {
-    const { startDate, endDate } = getDates()
+    const { dates, startDate, endDate } = getDates()
+    set({ dates })
     set({ startDate })
     set({ endDate })
     set({ minDate: startDate })
     set({ maxDate: endDate })
   },
   reset: () => {
+    set({ dates: [] })
     set({ minDate: undefined })
     set({ maxDate: undefined })
     set({ startDate: undefined })
