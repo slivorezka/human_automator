@@ -149,8 +149,17 @@ export const cellRating = (cell: HTMLElement): HTMLElement | null => {
   return cell.querySelector('.badge__item--no-border')
 }
 
+export const cellTaskRating = (cell: HTMLElement): HTMLElement | null => {
+  return cell.querySelector('.cell--last .badge__item--no-border')
+}
+
 export const rating = (cell: HTMLElement): number | null => {
   const rating = cellRating(cell)?.innerText.trim()
+  return rating ? Number(rating) : null
+}
+
+export const taskRating = (cell: HTMLElement): number | null => {
+  const rating = cellTaskRating(cell)?.innerText.trim()
   return rating ? Number(rating) : null
 }
 

@@ -4,7 +4,7 @@ export type ModalType =
   | 'studentListAdd'
   | 'studentListEdit'
   | 'studentListDelete'
-export type Action = false | 'setRating' | 'deleteRating' | 'countRating'
+export type Action = false | 'setRating' | 'copyRating' | 'deleteRating' | 'countRating'
 export type StudentSelectType = 'list' | 'custom' | 'all'
 export type ToastType =
   | false

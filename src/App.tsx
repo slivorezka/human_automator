@@ -1,13 +1,13 @@
 import { Play, X } from 'lucide-react'
 import { type FormEvent } from 'react'
 import { Button, Card, Form, InputGroup, Modal, ProgressBar } from 'react-bootstrap'
-import DatePicker from 'react-datepicker'
 import { RotatingLines } from 'react-loader-spinner'
 
 import Description from '@/components/Description'
 import Header from '@/components/Header'
 import Message from '@/components/Message'
 import RatingCount from '@/components/RatingCount'
+import StartEndDate from '@/components/StartEndDate'
 import StudentListAdd from '@/components/StudentLists/StudentListAdd'
 import StudentListDelete from '@/components/StudentLists/StudentListDelete'
 import StudentListEdit from '@/components/StudentLists/StudentListEdit'
@@ -17,7 +17,7 @@ import {
   StudentSelectTypeCustom,
   StudentSelectTypeList,
 } from '@/components/StudentSelectType'
-import { DATE_FORMAT, EXAMPLE_RATING, MAX_RATING, MIN_RATING } from '@/constants/config'
+import { EXAMPLE_RATING, MAX_RATING, MIN_RATING } from '@/constants/config'
 import useProcessing from '@/hooks/useProcessing'
 import useActionStore from '@/stores/useActionStore'
 import useAppStore from '@/stores/useAppStore'
@@ -40,6 +40,7 @@ import {
   rating,
   ratingComment,
   studentName,
+  taskRating,
   toolPanel,
 } from '@/utils/gradebook'
 import { beep, shuffleArray } from '@/utils/helper'
@@ -75,7 +76,7 @@ function App() {
     setCurrentPercent,
   } = useAppStore()
 
-  const { dates, minDate, maxDate, startDate, endDate, setStartDate, setEndDate } = useDateStore()
+  const { dates, minDate, maxDate, startDate, endDate } = useDateStore()
   const { ratingError, setRatingError, percentError, setPercentError } = useFormErrorStore()
   const { selectedStudents, setSelectedStudents } = useStudentsStore()
 
@@ -89,7 +90,8 @@ function App() {
 
   const { toast, setToast } = useToastStore()
 
-  const { action, setAction, isSetRating, isDeleteRating, isCountRating } = useActionStore()
+  const { action, setAction, isSetRating, isCopyRating, isDeleteRating, isCountRating } =
+    useActionStore()
   const { processItem } = useProcessing()
 
   const handleStop = (status: ToastType) => {
@@ -137,6 +139,104 @@ function App() {
 
     if (isStudentSelectTypeCustom && selectedStudents.length > 0) {
       students = selectedStudents
+    }
+
+    if (isCopyRating) {
+      setSubmitting(true)
+      setProcessing(true)
+      setCurrentPercent(0)
+      setMaxPercent(100)
+
+      const taskCells: HTMLElement[] = []
+      const cellsRating: {
+        cell: HTMLElement
+        rating: number
+      }[] = []
+
+      if (isStudentSelectTypeList && selectedStudentLists.length > 0) {
+        selectedStudentLists.forEach((studentList) => {
+          for (const row of getRows()) {
+            if (studentList.students.some((student) => student === studentName(row))) {
+              for (const cell of [...cellsNarrow(row)]) {
+                if (
+                  isCellInDates(cellsWithDates, cell, startDate, endDate) &&
+                  ratingComment(cell as HTMLElement) &&
+                  taskRating(cell as HTMLElement) &&
+                  !cellAbsent(cell as HTMLElement)
+                ) {
+                  taskCells.push(cell as HTMLElement)
+                }
+              }
+            }
+          }
+        })
+      }
+
+      if (isStudentSelectTypeCustom && selectedStudents.length > 0) {
+        for (const row of getRows()) {
+          if (selectedStudents.find((student) => student === studentName(row))) {
+            for (const cell of [...cellsNarrow(row)]) {
+              if (
+                isCellInDates(cellsWithDates, cell, startDate, endDate) &&
+                ratingComment(cell as HTMLElement) &&
+                taskRating(cell as HTMLElement) &&
+                !cellAbsent(cell as HTMLElement)
+              ) {
+                taskCells.push(cell as HTMLElement)
+              }
+            }
+          }
+        }
+      }
+
+      if (isStudentSelectTypeAll) {
+        for (const cell of getCells()) {
+          if (
+            isCellInDates(cellsWithDates, cell, startDate, endDate) &&
+            ratingComment(cell as HTMLElement) &&
+            taskRating(cell as HTMLElement) &&
+            !cellAbsent(cell as HTMLElement)
+          ) {
+            taskCells.push(cell as HTMLElement)
+          }
+        }
+      }
+
+      for (const taskCell of taskCells) {
+        const tasksRating = rating(taskCell)
+        const prevCell = taskCell.previousElementSibling as HTMLElement | null
+
+        if (prevCell && tasksRating && !rating(prevCell)) {
+          cellsRating.push({
+            cell: prevCell,
+            rating: tasksRating,
+          })
+        }
+      }
+
+      const percentPerItem = Math.round(useAppStore.getState().maxPercent / cellsRating.length)
+
+      for (const data of cellsRating) {
+        await processItem({
+          cell: data.cell,
+          minRating: data.rating,
+          maxRating: data.rating,
+        })
+
+        let percent = useAppStore.getState().currentPercent + percentPerItem
+
+        if (percent > useAppStore.getState().maxPercent) {
+          percent = useAppStore.getState().maxPercent
+        }
+
+        setCurrentPercent(percent)
+
+        if (!useAppStore.getState().isProcessing) {
+          return
+        }
+      }
+
+      handleStop('basicDone')
     }
 
     if (isSetRating) {
@@ -369,7 +469,6 @@ function App() {
               variant="success"
               animated
             />
-
             <div className="d-flex gap-1 mt-3 mb-0 justify-content-center align-items-center">
               <RotatingLines
                 color="black"
@@ -409,7 +508,16 @@ function App() {
                   <Form.Label className="fw-bold">Дія</Form.Label>
                   <Form.Check
                     type="switch"
-                    label="Проставити учням оцінки"
+                    label="Скопіювати учням оцінки"
+                    onChange={(e) =>
+                      e.target.checked ? setAction('copyRating') : setAction(false)
+                    }
+                    checked={isCopyRating}
+                    disabled={isSubmitting}
+                  />
+                  <Form.Check
+                    type="switch"
+                    label="Поставити учням оцінки"
                     onChange={(e) => (e.target.checked ? setAction('setRating') : setAction(false))}
                     checked={isSetRating}
                     disabled={isSubmitting}
@@ -434,18 +542,68 @@ function App() {
                   />
                 </Card.Body>
               </Card>
-
+              {isCopyRating && (
+                <>
+                  <Description>
+                    <p>
+                      <span className="fw-bold">Скопіювати учням оцінки</span> — Дозволяє скопіювати{' '}
+                      виставлені оцінки за <span className="fw-bold">завдання</span>, як за{' '}
+                      <span className="fw-bold">заняття</span>, на цій сторінці для обраних учнів.
+                    </p>
+                    <p>Також, можна обрати, з якої по яку дату скопіювати оцінки.</p>
+                  </Description>
+                  <Card className="mt-3">
+                    <Card.Body>
+                      <StudentSelectType />
+                      <Form.Text>
+                        <ul className="mt-3 mb-0">
+                          <li>
+                            <span className="fw-bold">Обрати всіх учнів</span> — дозволяє скопіювати
+                            оцінки
+                            <span className="fw-bold"> усім учням</span>
+                          </li>
+                          <li>
+                            <span className="fw-bold">Використати список учнів</span> — дозволяє
+                            скопіювати оцінки учням з обраного списку
+                          </li>
+                          <li>
+                            <span className="fw-bold">Обрати учнів зі списку</span> — дозволяє
+                            скопіювати оцінки <span className="fw-bold">окремим обраним учням</span>
+                          </li>
+                        </ul>
+                      </Form.Text>
+                    </Card.Body>
+                  </Card>
+                  {isStudentSelectTypeList && (
+                    <StudentSelectTypeList>
+                      <span className="fw-bold">Оберіть список учнів</span>, яким бажаєте скопіювати
+                      оцінки
+                    </StudentSelectTypeList>
+                  )}
+                  {isStudentSelectTypeCustom && (
+                    <StudentSelectTypeCustom>
+                      <span className="fw-bold">Оберіть учнів</span> яким бажаєте скопіювати оцінки
+                    </StudentSelectTypeCustom>
+                  )}
+                  <Card className="mt-3">
+                    <Card.Body>
+                      <StartEndDate />
+                    </Card.Body>
+                  </Card>
+                </>
+              )}
               {isSetRating && (
                 <>
                   <Description>
                     <p>
-                      <span className="fw-bold">Проставити учням оцінки</span> — Дозволяє заповнити{' '}
+                      <span className="fw-bold">Поставити учням оцінки</span> — Дозволяє заповнити{' '}
                       <span className="fw-bold">НЕ</span> виставлені оцінки на цій сторінці для
                       обраних учнів.
                     </p>
                     <p>
-                      Можна обрати, які оцінки ставити (від мінімальної до максимальної), також
-                      можна обрати бажаний відсоток заповнення від загальної кількості оцінок.
+                      Можна обрати, які оцінки ставити (від мінімальної до максимальної; обрати з
+                      якої по яку дату ставити оцінки), також можна обрати бажаний відсоток
+                      заповнення від загальної кількості оцінок.
                     </p>
                     <p>
                       Оцінки будь виставлені у <span className="fw-bold">випадковому</span> порядку.
@@ -486,50 +644,7 @@ function App() {
                   )}
                   <Card className="mt-3">
                     <Card.Body>
-                      <Form.Group>
-                        <Form.Label className="fw-bold">Дата початку</Form.Label>
-                        <InputGroup className="mb-2">
-                          <DatePicker
-                            filterDate={(date) => {
-                              return dates.some((d) => d.toDateString() === date.toDateString())
-                            }}
-                            minDate={minDate}
-                            maxDate={endDate}
-                            selected={startDate}
-                            onChange={(date) => setStartDate(date ?? undefined)}
-                            className="form-control"
-                            dateFormat={DATE_FORMAT}
-                            placeholderText="Оберіть дату початку"
-                            required
-                          />
-                        </InputGroup>
-                        <Form.Text>
-                          Оберіть <span className="fw-bold">дату початку</span>, з якої бажаєте
-                          діяти, включно
-                        </Form.Text>
-                      </Form.Group>
-                      <Form.Group className="mt-3">
-                        <Form.Label className="fw-bold">Дата закінчення</Form.Label>
-                        <InputGroup className="mb-2">
-                          <DatePicker
-                            filterDate={(date) => {
-                              return dates.some((d) => d.toDateString() === date.toDateString())
-                            }}
-                            minDate={startDate}
-                            maxDate={maxDate}
-                            selected={endDate}
-                            onChange={(date) => setEndDate(date ?? undefined)}
-                            className="form-control"
-                            dateFormat={DATE_FORMAT}
-                            placeholderText="Оберіть дату закінчення"
-                            required
-                          />
-                        </InputGroup>
-                        <Form.Text>
-                          Оберіть <span className="fw-bold">дату закінчення</span>, до якої бажаєте
-                          діяти, включно
-                        </Form.Text>
-                      </Form.Group>
+                      <StartEndDate />
                     </Card.Body>
                   </Card>
                   <Card className="mt-3">
@@ -643,8 +758,9 @@ function App() {
                       виставлені оцінки на цій сторінці для обраних учнів.
                     </p>
                     <p>
-                      Можна обрати, які саме оцінки треба видалити, наприклад, тільки{' '}
-                      <span className="fw-bold">{EXAMPLE_RATING}</span>
+                      Можна обрати, яку саме оцінку видалити, наприклад, тільки{' '}
+                      <span className="fw-bold">{EXAMPLE_RATING}</span>, також можна обрати з якої
+                      по яку дату видалити оцінку.
                     </p>
                   </Description>
                   <Card className="mt-3">
@@ -683,50 +799,7 @@ function App() {
                   )}
                   <Card className="mt-3">
                     <Card.Body>
-                      <Form.Group>
-                        <Form.Label className="fw-bold">Дата початку</Form.Label>
-                        <InputGroup className="mb-2">
-                          <DatePicker
-                            filterDate={(date) => {
-                              return dates.some((d) => d.toDateString() === date.toDateString())
-                            }}
-                            minDate={minDate}
-                            maxDate={endDate}
-                            selected={startDate}
-                            onChange={(date) => setStartDate(date ?? undefined)}
-                            className="form-control"
-                            dateFormat={DATE_FORMAT}
-                            placeholderText="Оберіть дату початку"
-                            required
-                          />
-                        </InputGroup>
-                        <Form.Text>
-                          Оберіть <span className="fw-bold">дату початку</span>, з якої бажаєте
-                          діяти, включно
-                        </Form.Text>
-                      </Form.Group>
-                      <Form.Group className="mt-3">
-                        <Form.Label className="fw-bold">Дата закінчення</Form.Label>
-                        <InputGroup className="mb-2">
-                          <DatePicker
-                            filterDate={(date) => {
-                              return dates.some((d) => d.toDateString() === date.toDateString())
-                            }}
-                            minDate={startDate}
-                            maxDate={maxDate}
-                            selected={endDate}
-                            onChange={(date) => setEndDate(date ?? undefined)}
-                            className="form-control"
-                            dateFormat={DATE_FORMAT}
-                            placeholderText="Оберіть дату закінчення"
-                            required
-                          />
-                        </InputGroup>
-                        <Form.Text>
-                          Оберіть <span className="fw-bold">дату закінчення</span>, до якої бажаєте
-                          діяти, включно
-                        </Form.Text>
-                      </Form.Group>
+                      <StartEndDate />
                     </Card.Body>
                   </Card>
                   {!removeAllRating && (
