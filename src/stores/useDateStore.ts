@@ -8,18 +8,22 @@ const useDateStore = create<{
   dates: Date[]
   minDate: Date | undefined
   maxDate: Date | undefined
+  fileDate: Date | undefined
   startDate: Date | undefined
   endDate: Date | undefined
   setStartDate: (date: Date | undefined) => void
   setEndDate: (date: Date | undefined) => void
+  setFileDate: (date: Date | undefined) => void
   reset: () => void
   loadDates: () => void
 }>((set, get) => ({
   dates: [],
   minDate: undefined,
   maxDate: undefined,
+  fileDate: undefined,
   startDate: undefined,
   endDate: undefined,
+  setFileDate: (date) => set({ fileDate: date }),
   setStartDate: (date) => {
     set({ startDate: date })
 

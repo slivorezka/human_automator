@@ -9,6 +9,7 @@ export function StudentSelectType() {
   const {
     isStudentSelectTypeAll,
     isStudentSelectTypeList,
+    isStudentSelectTypeFile,
     isStudentSelectTypeCustom,
     setStudentSelectType,
   } = useStudentListsStore()
@@ -29,6 +30,15 @@ export function StudentSelectType() {
           e.target.checked ? setStudentSelectType('list') : setStudentSelectType('all')
         }
         checked={isStudentSelectTypeList}
+        disabled={isSubmitting}
+      />
+      <Form.Check
+        type="switch"
+        label="Використати список учнів з файлу"
+        onChange={(e) =>
+          e.target.checked ? setStudentSelectType('file') : setStudentSelectType('all')
+        }
+        checked={isStudentSelectTypeFile}
         disabled={isSubmitting}
       />
       <Form.Check

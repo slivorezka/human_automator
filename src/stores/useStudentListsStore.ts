@@ -17,6 +17,7 @@ const useStudentListsStore = create<{
   studentSelectType: StudentSelectType
   isStudentSelectTypeAll: boolean
   isStudentSelectTypeList: boolean
+  isStudentSelectTypeFile: boolean
   isStudentSelectTypeCustom: boolean
   selectedStudentLists: StudentList[]
   setStudentSelectType: (studentSelectType: StudentSelectType) => void
@@ -42,6 +43,7 @@ const useStudentListsStore = create<{
     studentLists: [],
     isStudentSelectTypeAll: true,
     isStudentSelectTypeList: false,
+    isStudentSelectTypeFile: false,
     isStudentSelectTypeCustom: false,
     loadStudentLists: async () => {
       const result = await chrome.storage.local.get('humanAutomator')
@@ -149,6 +151,7 @@ const useStudentListsStore = create<{
         studentSelectType,
         isStudentSelectTypeAll: studentSelectType === 'all',
         isStudentSelectTypeList: studentSelectType === 'list',
+        isStudentSelectTypeFile: studentSelectType === 'file',
         isStudentSelectTypeCustom: studentSelectType === 'custom',
       })
 
@@ -175,6 +178,7 @@ const useStudentListsStore = create<{
         studentLists: [],
         isStudentSelectTypeAll: true,
         isStudentSelectTypeList: false,
+        isStudentSelectTypeFile: false,
         isStudentSelectTypeCustom: false,
       }),
   }

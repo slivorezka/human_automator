@@ -15,9 +15,10 @@ import StudentLists from '@/components/StudentLists/StudentLists'
 import {
   StudentSelectType,
   StudentSelectTypeCustom,
+  StudentSelectTypeFile,
   StudentSelectTypeList,
 } from '@/components/StudentSelectType'
-import { EXAMPLE_RATING, MAX_RATING, MIN_RATING } from '@/constants/config'
+import { DATE_FORMAT, EXAMPLE_RATING, MAX_RATING, MIN_RATING } from '@/constants/config'
 import useProcessing from '@/hooks/useProcessing'
 import useActionStore from '@/stores/useActionStore'
 import useAppStore from '@/stores/useAppStore'
@@ -44,6 +45,7 @@ import {
   toolPanel,
 } from '@/utils/gradebook'
 import { beep, shuffleArray } from '@/utils/helper'
+import DatePicker from 'react-datepicker'
 
 function App() {
   const {
@@ -76,13 +78,14 @@ function App() {
     setCurrentPercent,
   } = useAppStore()
 
-  const { dates, minDate, maxDate, startDate, endDate } = useDateStore()
+  const { dates, minDate, maxDate, fileDate, startDate, endDate, setFileDate } = useDateStore()
   const { ratingError, setRatingError, percentError, setPercentError } = useFormErrorStore()
-  const { selectedStudents, setSelectedStudents } = useStudentsStore()
+  const { selectedStudents, fileStudents, setSelectedStudents } = useStudentsStore()
 
   const {
     isStudentSelectTypeAll,
     isStudentSelectTypeList,
+    isStudentSelectTypeFile,
     isStudentSelectTypeCustom,
     selectedStudentLists,
     studentLists,
@@ -93,6 +96,10 @@ function App() {
   const { action, setAction, isSetRating, isCopyRating, isDeleteRating, isCountRating } =
     useActionStore()
   const { processItem } = useProcessing()
+
+  const filterDate = (date: Date) => {
+    return dates.some((d) => d.toDateString() === date.toDateString())
+  }
 
   const handleStop = (status: ToastType) => {
     setProcessing(false)
@@ -216,11 +223,75 @@ function App() {
 
       const percentPerItem = Math.round(useAppStore.getState().maxPercent / cellsRating.length)
 
-      for (const data of cellsRating) {
+      for (const cellRating of cellsRating) {
         await processItem({
-          cell: data.cell,
-          minRating: data.rating,
-          maxRating: data.rating,
+          cell: cellRating.cell,
+          minRating: cellRating.rating,
+          maxRating: cellRating.rating,
+        })
+
+        let percent = useAppStore.getState().currentPercent + percentPerItem
+
+        if (percent > useAppStore.getState().maxPercent) {
+          percent = useAppStore.getState().maxPercent
+        }
+
+        setCurrentPercent(percent)
+
+        if (!useAppStore.getState().isProcessing) {
+          return
+        }
+      }
+
+      handleStop('basicDone')
+    }
+
+    if (isSetRating && isStudentSelectTypeFile) {
+      if (!fileDate) {
+        throw new Error('Dates are not defined')
+      }
+
+      setSubmitting(true)
+      setProcessing(true)
+      setCurrentPercent(0)
+      setMaxPercent(100)
+
+      const cellsRating: {
+        cell: HTMLElement
+        rating: number
+      }[] = []
+
+      if (fileStudents && fileStudents.length > 0) {
+        for (const row of getRows()) {
+          const studentRating = fileStudents.find(
+            (fileStudent) => fileStudent.name === studentName(row)
+          )
+
+          if (studentRating) {
+            for (const cell of [...cellsNarrow(row)]) {
+              if (
+                isCellInDates(cellsWithDates, cell, fileDate, fileDate) &&
+                ratingComment(cell as HTMLElement) &&
+                !rating(cell as HTMLElement) &&
+                !cellAbsent(cell as HTMLElement)
+              ) {
+                cellsRating.push({
+                  cell,
+                  rating: studentRating.rating,
+                })
+              }
+            }
+          }
+        }
+      }
+
+      const percentPerItem = Math.round(useAppStore.getState().maxPercent / cellsRating.length)
+
+      for (const cellRating of cellsRating) {
+        await processItem({
+          cell: cellRating.cell,
+          minRating: cellRating.rating,
+          maxRating: cellRating.rating,
         })
 
         let percent = useAppStore.getState().currentPercent + percentPerItem
@@ -567,6 +638,10 @@ function App() {
                             скопіювати оцінки учням з обраного списку
                           </li>
                           <li>
+                            <span className="fw-bold">Використати список учнів з файлу</span> —
+                            дозволяє скопіювати оцінки учням з обраного файлу
+                          </li>
+                          <li>
                             <span className="fw-bold">Обрати учнів зі списку</span> — дозволяє
                             скопіювати оцінки <span className="fw-bold">окремим обраним учням</span>
                           </li>
@@ -637,119 +712,168 @@ function App() {
                       оцінки
                     </StudentSelectTypeList>
                   )}
+                  {isStudentSelectTypeFile && (
+                    <>
+                      <StudentSelectTypeFile>
+                        <p>
+                          <span className="fw-bold">Оберіть файл зі списком учнів</span>, яким
+                          бажаєте виставити оцінки
+                        </p>
+                        <p>
+                          Дозволено типи файлів: <span className="fw-bold">.csv, .xlsx, .xls</span>
+                        </p>
+                      </StudentSelectTypeFile>
+                      <Card className="mt-3">
+                        <Card.Body>
+                          <Form.Group>
+                            <Form.Label className="fw-bold">Дата</Form.Label>
+                            <InputGroup className="mb-2">
+                              <DatePicker
+                                filterDate={filterDate}
+                                minDate={minDate}
+                                maxDate={endDate}
+                                selected={fileDate}
+                                onChange={(date) => setFileDate(date ?? undefined)}
+                                className="form-control"
+                                dateFormat={DATE_FORMAT}
+                                placeholderText="Оберіть дату"
+                                required
+                              />
+                            </InputGroup>
+                            <Form.Text>
+                              Оберіть <span className="fw-bold">дату </span>, для якої бажаєте
+                              поставити оцінки
+                            </Form.Text>
+                          </Form.Group>
+                        </Card.Body>
+                      </Card>
+                    </>
+                  )}
                   {isStudentSelectTypeCustom && (
                     <StudentSelectTypeCustom>
                       <span className="fw-bold">Оберіть учнів</span> яким бажаєте виставити оцінки
                     </StudentSelectTypeCustom>
                   )}
-                  <Card className="mt-3">
-                    <Card.Body>
-                      <StartEndDate />
-                    </Card.Body>
-                  </Card>
-                  <Card className="mt-3">
-                    <Card.Body>
-                      <Form.Group>
-                        <Form.Label className="fw-bold">Мінімальна оцінка</Form.Label>
-                        <InputGroup className="mb-2">
-                          <Form.Control
-                            type="number"
-                            min={MIN_RATING}
-                            max={MAX_RATING}
-                            placeholder="Введіть мінімальну оцінку"
-                            required
-                            disabled={
-                              isSubmitting || (isStudentSelectTypeList && studentLists.length === 0)
-                            }
-                            isInvalid={!!ratingError}
-                            onChange={(e) => {
-                              setMinRating(Number(e.target.value))
-                              setRatingError('')
-                            }}
-                          />
-                          <Form.Control.Feedback type="invalid">
-                            {ratingError}
-                          </Form.Control.Feedback>
-                        </InputGroup>
-                        <Form.Text>
-                          <span className="fw-bold">Мінімальна оцінка</span>, яку бажаєте поставити,
-                          наприклад, <span className="fw-bold">{EXAMPLE_RATING}</span>
-                        </Form.Text>
-                      </Form.Group>
-                    </Card.Body>
-                  </Card>
-                  <Card className="mt-3">
-                    <Card.Body>
-                      <Form.Group>
-                        <Form.Label className="fw-bold">Максимальна оцінка</Form.Label>
-                        <InputGroup className="mb-2">
-                          <Form.Control
-                            type="number"
-                            min={MIN_RATING}
-                            max={MAX_RATING}
-                            placeholder="Введіть максимальну оцінку"
-                            required
-                            disabled={
-                              isSubmitting || (isStudentSelectTypeList && studentLists.length === 0)
-                            }
-                            isInvalid={!!ratingError}
-                            onChange={(e) => {
-                              setMaxRating(Number(e.target.value))
-                              setRatingError('')
-                            }}
-                          />
-                          <Form.Control.Feedback type="invalid">
-                            {ratingError}
-                          </Form.Control.Feedback>
-                        </InputGroup>
-                        <Form.Text>
-                          <span className="fw-bold">Максимальна оцінка</span>, яку бажаєте
-                          поставити, наприклад, <span className="fw-bold">{MAX_RATING}</span>
-                        </Form.Text>
-                      </Form.Group>
-                    </Card.Body>
-                  </Card>
-                  <Card className="mt-3">
-                    <Card.Body>
-                      <Form.Group>
-                        <Form.Label className="fw-bold">
-                          Максимальний відсоток заповнення
-                        </Form.Label>
-                        <InputGroup className="mb-2">
-                          <Form.Control
-                            type="number"
-                            min={currentPercent}
-                            max="100"
-                            placeholder="Введіть максимальний відсоток заповнення"
-                            required
-                            key={currentPercent}
-                            disabled={
-                              isSubmitting || (isStudentSelectTypeList && studentLists.length === 0)
-                            }
-                            isInvalid={!!percentError}
-                            defaultValue={currentPercent}
-                            onChange={(e) => {
-                              setMaxPercent(Number(e.target.value))
-                              setPercentError('')
-                            }}
-                          />
-                          <Form.Control.Feedback type="invalid">
-                            {percentError}
-                          </Form.Control.Feedback>
-                        </InputGroup>
-                        <Form.Text>
-                          <span className="fw-bold">Максимальний відсоток заповнення</span> оцінок,
-                          наприклад, зараз є заповнення на{' '}
-                          <span className="fw-bold">{currentPercent}%</span>
-                          {selectedStudents && selectedStudents.length > 0 && (
-                            <> для обраних учнів</>
-                          )}
-                        </Form.Text>
-                      </Form.Group>
-                    </Card.Body>
-                  </Card>
                 </>
               )}
+
+              {isSetRating &&
+                (isStudentSelectTypeList ||
+                  isStudentSelectTypeCustom ||
+                  isStudentSelectTypeAll) && (
+                  <>
+                    <Card className="mt-3">
+                      <Card.Body>
+                        <StartEndDate />
+                      </Card.Body>
+                    </Card>
+                    <Card className="mt-3">
+                      <Card.Body>
+                        <Form.Group>
+                          <Form.Label className="fw-bold">Мінімальна оцінка</Form.Label>
+                          <InputGroup className="mb-2">
+                            <Form.Control
+                              type="number"
+                              min={MIN_RATING}
+                              max={MAX_RATING}
+                              placeholder="Введіть мінімальну оцінку"
+                              required
+                              disabled={
+                                isSubmitting ||
+                                (isStudentSelectTypeList && studentLists.length === 0)
+                              }
+                              isInvalid={!!ratingError}
+                              onChange={(e) => {
+                                setMinRating(Number(e.target.value))
+                                setRatingError('')
+                              }}
+                            />
+                            <Form.Control.Feedback type="invalid">
+                              {ratingError}
+                            </Form.Control.Feedback>
+                          </InputGroup>
+                          <Form.Text>
+                            <span className="fw-bold">Мінімальна оцінка</span>, яку бажаєте
+                            поставити, наприклад, <span className="fw-bold">{EXAMPLE_RATING}</span>
+                          </Form.Text>
+                        </Form.Group>
+                      </Card.Body>
+                    </Card>
+                    <Card className="mt-3">
+                      <Card.Body>
+                        <Form.Group>
+                          <Form.Label className="fw-bold">Максимальна оцінка</Form.Label>
+                          <InputGroup className="mb-2">
+                            <Form.Control
+                              type="number"
+                              min={MIN_RATING}
+                              max={MAX_RATING}
+                              placeholder="Введіть максимальну оцінку"
+                              required
+                              disabled={
+                                isSubmitting ||
+                                (isStudentSelectTypeList && studentLists.length === 0)
+                              }
+                              isInvalid={!!ratingError}
+                              onChange={(e) => {
+                                setMaxRating(Number(e.target.value))
+                                setRatingError('')
+                              }}
+                            />
+                            <Form.Control.Feedback type="invalid">
+                              {ratingError}
+                            </Form.Control.Feedback>
+                          </InputGroup>
+                          <Form.Text>
+                            <span className="fw-bold">Максимальна оцінка</span>, яку бажаєте
+                            поставити, наприклад, <span className="fw-bold">{MAX_RATING}</span>
+                          </Form.Text>
+                        </Form.Group>
+                      </Card.Body>
+                    </Card>
+                    <Card className="mt-3">
+                      <Card.Body>
+                        <Form.Group>
+                          <Form.Label className="fw-bold">
+                            Максимальний відсоток заповнення
+                          </Form.Label>
+                          <InputGroup className="mb-2">
+                            <Form.Control
+                              type="number"
+                              min={currentPercent}
+                              max="100"
+                              placeholder="Введіть максимальний відсоток заповнення"
+                              required
+                              key={currentPercent}
+                              disabled={
+                                isSubmitting ||
+                                (isStudentSelectTypeList && studentLists.length === 0)
+                              }
+                              isInvalid={!!percentError}
+                              defaultValue={currentPercent}
+                              onChange={(e) => {
+                                setMaxPercent(Number(e.target.value))
+                                setPercentError('')
+                              }}
+                            />
+                            <Form.Control.Feedback type="invalid">
+                              {percentError}
+                            </Form.Control.Feedback>
+                          </InputGroup>
+                          <Form.Text>
+                            <span className="fw-bold">Максимальний відсоток заповнення</span>{' '}
+                            оцінок, наприклад, зараз є заповнення на{' '}
+                            <span className="fw-bold">{currentPercent}%</span>
+                            {selectedStudents && selectedStudents.length > 0 && (
+                              <> для обраних учнів</>
+                            )}
+                          </Form.Text>
+                        </Form.Group>
+                      </Card.Body>
+                    </Card>
+                  </>
+                )}
+
               {isDeleteRating && (
                 <>
                   <Description>

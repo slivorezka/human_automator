@@ -127,7 +127,7 @@ export default defineConfig(() => {
       'process.env.NODE_ENV': JSON.stringify('production'),
     },
     build: {
-      chunkSizeWarningLimit: 1000,
+      chunkSizeWarningLimit: 2000,
       emptyOutDir: true,
       outDir: 'dist',
       minify: 'terser',
