@@ -138,7 +138,7 @@ function App() {
     cellRemoveSelected(true)
 
     let students: string[] = []
-    const cellsWithDates = getCellsWithDates(dates)
+    let cellsWithDates = getCellsWithDates(dates)
 
     if (isStudentSelectTypeList && selectedStudentLists.length > 0) {
       students = selectedStudentLists.flatMap((studentList) => studentList.students)
@@ -250,7 +250,7 @@ function App() {
       if (!fileDate) {
         throw new Error('Dates are not defined')
       }
-
+      cellsWithDates = getCellsWithDates(dates, true)
       setSubmitting(true)
       setProcessing(true)
       setCurrentPercent(0)

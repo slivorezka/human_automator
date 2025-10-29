@@ -92,7 +92,10 @@ export const isCellInDates = (
   )
 }
 
-export function getCellsWithDates(dates: Date[]): {
+export function getCellsWithDates(
+  dates: Date[],
+  onlyLesson: boolean = false
+): {
   date: Date
   cell: HTMLElement
 }[] {
@@ -113,7 +116,14 @@ export function getCellsWithDates(dates: Date[]): {
       const dateIndex = index % dates.length
       const date = dates[dateIndex]
 
-      return date ? cells.map((cell) => ({ date, cell })) : []
+      if (onlyLesson) {
+        return {
+          date,
+          cell: cells[0],
+        }
+      } else {
+        return cells.map((cell) => ({ date, cell }))
+      }
     })
   )
 

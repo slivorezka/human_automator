@@ -64,6 +64,7 @@ const useDateStore = create<{
     set({ dates: [] })
     set({ minDate: undefined })
     set({ maxDate: undefined })
+    set({ fileDate: undefined })
     set({ startDate: undefined })
     set({ endDate: undefined })
   },
