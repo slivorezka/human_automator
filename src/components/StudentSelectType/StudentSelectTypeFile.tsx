@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { Card, Form } from 'react-bootstrap'
 
-import { MAX_RATING, MIN_RATING } from '@/constants/config.ts'
+import { MAX_RATING, MIN_RATING } from '@/constants/config'
 import useStudentsStore from '@/stores/useStudentsStore'
 import type { FileStudent } from '@/types'
 import { parseBrowserFile } from '@/utils/helper'

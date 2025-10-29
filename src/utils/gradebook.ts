@@ -1,4 +1,4 @@
-import { chunkArray } from '@/utils/helper.ts'
+import { chunkArray } from '@/utils/helper'
 
 const translateUkrainianDate = (text: string | undefined): string | undefined => {
   const ukToEnDays: Record<string, string> = {

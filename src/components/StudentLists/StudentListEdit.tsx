@@ -10,7 +10,7 @@ import useStudentListsStore from '@/stores/useStudentListsStore'
 import useStudentsStore from '@/stores/useStudentsStore'
 import useToastStore from '@/stores/useToastStore'
 import type { SelectOption } from '@/types'
-import { getSelectOption } from '@/utils/helper.ts'
+import { getSelectOption } from '@/utils/helper'
 
 function StudentListEdit() {
   const animatedComponents = makeAnimated()

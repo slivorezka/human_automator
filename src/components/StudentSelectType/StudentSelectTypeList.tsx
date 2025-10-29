@@ -8,7 +8,7 @@ import useAppStore from '@/stores/useAppStore'
 import useModalStoreStore from '@/stores/useModalStoreStore'
 import useStudentListsStore from '@/stores/useStudentListsStore'
 import type { SelectOption } from '@/types'
-import { getClassId } from '@/utils/gradebook.ts'
+import { getClassId } from '@/utils/gradebook'
 import { getSelectListOption } from '@/utils/helper'
 
 export function StudentSelectTypeList({ children }: { children?: ReactNode }) {

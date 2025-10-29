@@ -1,6 +1,7 @@
 import { Play, X } from 'lucide-react'
 import { type FormEvent } from 'react'
 import { Button, Card, Form, InputGroup, Modal, ProgressBar } from 'react-bootstrap'
+import DatePicker from 'react-datepicker'
 import { RotatingLines } from 'react-loader-spinner'
 
 import Description from '@/components/Description'
@@ -45,7 +46,6 @@ import {
   toolPanel,
 } from '@/utils/gradebook'
 import { beep, shuffleArray } from '@/utils/helper'
-import DatePicker from 'react-datepicker'
 
 function App() {
   const {
