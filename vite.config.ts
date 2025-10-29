@@ -45,15 +45,15 @@ function updateManifest(): Plugin {
         return files.flat()
       }
 
-      let backgroundJsFile = 'background.js'
+      let serviceWorkerJsFile = 'service_worker.js'
       let indexJsFile = 'index.js'
       let styleCssFile = 'style.css'
 
       for (const fileName of await walk(outDir)) {
         const baseName = path.basename(fileName)
 
-        if (baseName.startsWith('background-') && baseName.endsWith('.js')) {
-          backgroundJsFile = baseName
+        if (baseName.startsWith('service_worker-') && baseName.endsWith('.js')) {
+          serviceWorkerJsFile = baseName
         }
 
         if (baseName.startsWith('index-') && baseName.endsWith('.js')) {
@@ -68,14 +68,14 @@ function updateManifest(): Plugin {
       const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'))
 
       if (manifest.background?.service_worker) {
-        manifest.background.service_worker = backgroundJsFile
+        manifest.background.service_worker = serviceWorkerJsFile
       }
 
-      const backgroundPath = join(outDir, backgroundJsFile)
+      const backgroundPath = join(outDir, serviceWorkerJsFile)
 
       if (!existsSync(backgroundPath)) {
         console.error(
-          `\x1b[31m✗ background.js or background-[hash].js not found at ${manifestPath}\x1b[0m`
+          `\x1b[31m✗ service_worker.js or service_worker-[hash].js not found at ${manifestPath}\x1b[0m`
         )
         return
       }
@@ -141,7 +141,7 @@ export default defineConfig(() => {
         : undefined,
       rollupOptions: {
         input: {
-          background: resolve(__dirname, 'src/background.ts'),
+          service_worker: resolve(__dirname, 'src/service_worker.ts'),
           index: resolve(__dirname, 'src/index.tsx'),
         },
         output: {

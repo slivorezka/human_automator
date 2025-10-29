@@ -14,7 +14,7 @@
     "128": "icons/16.png"
   },
   "background": {
-    "service_worker": "background-D_annzIj.js",
+    "service_worker": "service_worker-D4FALI9W.js",
     "type": "module"
   },
   "permissions": [

@@ -21,15 +21,17 @@ chrome.webNavigation.onCompleted.addListener(async (details) => {
     target: { tabId: details.tabId },
     args: [svgContent],
     func: (svg) => {
-      const humanAutomator = document.createElement('div')
-      humanAutomator.id = 'human-automator'
-      humanAutomator.innerHTML = svg
-      document.body.appendChild(humanAutomator)
+      if (document.getElementsByClassName('gradebook-container')) {
+        const humanAutomator = document.createElement('div')
+        humanAutomator.id = 'human-automator'
+        humanAutomator.innerHTML = svg
+        document.body.appendChild(humanAutomator)
 
-      humanAutomator.addEventListener('click', () => {
-        window.dispatchEvent(new CustomEvent('destroyHumanAutomator'))
-        window.dispatchEvent(new CustomEvent('runHumanAutomator'))
-      })
+        humanAutomator.addEventListener('click', () => {
+          window.dispatchEvent(new CustomEvent('destroyHumanAutomator'))
+          window.dispatchEvent(new CustomEvent('runHumanAutomator'))
+        })
+      }
     },
   })
 })
