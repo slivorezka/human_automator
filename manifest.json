@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Human Automator",
-  "version": "3.0.0",
+  "version": "1.0.0",
   "description": "An unofficial app for automatization human.ua service",
   "action": {
     "default_icon": {
@@ -17,13 +17,6 @@
     "service_worker": "background.js",
     "type": "module"
   },
-  "permissions": [
-    "storage",
-    "scripting",
-    "activeTab",
-    "webNavigation"
-  ],
-  "host_permissions": [
-    "<all_urls>"
-  ]
+  "permissions": ["storage", "scripting", "activeTab", "webNavigation"],
+  "host_permissions": ["<all_urls>"]
 }

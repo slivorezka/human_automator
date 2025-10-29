@@ -1,10 +1,12 @@
 import { Form } from 'react-bootstrap'
 
+import useActionStore from '@/stores/useActionStore'
 import useAppStore from '@/stores/useAppStore'
 import useStudentListsStore from '@/stores/useStudentListsStore'
 
 export function StudentSelectType() {
   const { isSubmitting } = useAppStore()
+  const { isDeleteRating } = useActionStore()
 
   const {
     isStudentSelectTypeAll,
@@ -32,15 +34,17 @@ export function StudentSelectType() {
         checked={isStudentSelectTypeList}
         disabled={isSubmitting}
       />
-      <Form.Check
-        type="switch"
-        label="Використати список учнів з файлу"
-        onChange={(e) =>
-          e.target.checked ? setStudentSelectType('file') : setStudentSelectType('all')
-        }
-        checked={isStudentSelectTypeFile}
-        disabled={isSubmitting}
-      />
+      {!isDeleteRating && (
+        <Form.Check
+          type="switch"
+          label="Використати список учнів з файлу"
+          onChange={(e) =>
+            e.target.checked ? setStudentSelectType('file') : setStudentSelectType('all')
+          }
+          checked={isStudentSelectTypeFile}
+          disabled={isSubmitting}
+        />
+      )}
       <Form.Check
         type="switch"
         label="Обрати учнів зі списку"
