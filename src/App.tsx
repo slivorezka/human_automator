@@ -126,6 +126,11 @@ function App() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
+    if (isCountRating) {
+      setCountRating(true)
+      return
+    }
+
     if (!minDate || !maxDate || !startDate || !endDate) {
       throw new Error('Dates are not defined')
     }
@@ -467,10 +472,27 @@ function App() {
 
       handleStop('basicDone')
     }
+  }
 
-    if (isCountRating) {
-      setCountRating(true)
-    }
+  if (isRunCountRating) {
+    return (
+      <Modal show={showModalBasic} onHide={handleClose} centered animation>
+        <Header />
+        <Modal.Body>
+          <Card>
+            <Card.Body>
+              <RatingCount />
+            </Card.Body>
+          </Card>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="danger" onClick={handleClose}>
+            <X width="16" height="16" />
+            <span className="align-middle ms-1">Закрити</span>
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    )
   }
 
   return (
@@ -505,25 +527,6 @@ function App() {
       {showModalStudentListEdit && <StudentListEdit />}
       {showModalStudentListDelete && <StudentListDelete />}
       {showModalStudentLists && <StudentLists />}
-
-      {isRunCountRating && (
-        <Modal show={showModalBasic} onHide={handleClose} centered animation>
-          <Header />
-          <Modal.Body>
-            <Card>
-              <Card.Body>
-                <RatingCount />
-              </Card.Body>
-            </Card>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="danger" onClick={handleClose}>
-              <X width="16" height="16" />
-              <span className="align-middle ms-1">Закрити</span>
-            </Button>
-          </Modal.Footer>
-        </Modal>
-      )}
 
       {isProcessing ? (
         <Modal show={showModalBasic} onHide={handleClose} centered animation>
