@@ -3,12 +3,10 @@ import DatePicker from 'react-datepicker'
 
 import { DATE_FORMAT } from '@/constants/config'
 import useDateStore from '@/stores/useDateStore'
+import { filterDate } from '@/utils/helper';
 
 function StartEndDate() {
   const { dates, minDate, maxDate, startDate, endDate, setStartDate, setEndDate } = useDateStore()
-  const filterDate = (date: Date) => {
-    return dates.some((d) => d.toDateString() === date.toDateString())
-  }
 
   return (
     <>
@@ -16,7 +14,7 @@ function StartEndDate() {
         <Form.Label className="fw-bold">Дата початку</Form.Label>
         <InputGroup className="mb-2">
           <DatePicker
-            filterDate={filterDate}
+            filterDate={(date) => filterDate(dates, date)}
             minDate={minDate}
             maxDate={endDate}
             selected={startDate}
@@ -35,7 +33,7 @@ function StartEndDate() {
         <Form.Label className="fw-bold">Дата закінчення</Form.Label>
         <InputGroup className="mb-2">
           <DatePicker
-            filterDate={filterDate}
+            filterDate={(date) => filterDate(dates, date)}
             minDate={startDate}
             maxDate={maxDate}
             selected={endDate}

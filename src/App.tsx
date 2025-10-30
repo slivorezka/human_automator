@@ -46,6 +46,7 @@ import {
   toolPanel,
 } from '@/utils/gradebook'
 import { beep, shuffleArray } from '@/utils/helper'
+import {filterDate} from "./utils/helper";
 
 function App() {
   const {
@@ -96,10 +97,6 @@ function App() {
   const { action, setAction, isSetRating, isCopyRating, isDeleteRating, isCountRating } =
     useActionStore()
   const { processItem } = useProcessing()
-
-  const filterDate = (date: Date) => {
-    return dates.some((d) => d.toDateString() === date.toDateString())
-  }
 
   const handleStop = (status: ToastType) => {
     setProcessing(false)
@@ -732,7 +729,7 @@ function App() {
                             <Form.Label className="fw-bold">Дата</Form.Label>
                             <InputGroup className="mb-2">
                               <DatePicker
-                                filterDate={filterDate}
+                                filterDate={(date) => filterDate(dates, date)}
                                 minDate={minDate}
                                 maxDate={endDate}
                                 selected={fileDate}

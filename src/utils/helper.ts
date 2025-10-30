@@ -83,3 +83,7 @@ export async function parseBrowserFile(file: File): Promise<ParsedRow> {
 
   throw new Error('Unsupported file type')
 }
+
+export const filterDate = (dates: Date[], date: Date) => {
+  return dates.some((d) => d.toDateString() === date.toDateString())
+}
