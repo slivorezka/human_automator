@@ -13,10 +13,29 @@
     "48": "icons/16.png",
     "128": "icons/16.png"
   },
-  "background": {
-    "service_worker": "service_worker-D4FALI9W.js",
-    "type": "module"
-  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.human.ua/*"
+      ],
+      "js": [
+        "content-CiMiN1iL.js"
+      ],
+      "css": [
+        "style-CuCdXjcO.css"
+      ]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "icons/logo.svg"
+      ],
+      "matches": [
+        "*://*.human.ua/*"
+      ]
+    }
+  ],
   "permissions": [
     "storage",
     "scripting",
@@ -24,6 +43,6 @@
     "webNavigation"
   ],
   "host_permissions": [
-    "<all_urls>"
+    "*://*.human.ua/*"
   ]
 }

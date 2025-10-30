@@ -2,6 +2,7 @@ import Papa from 'papaparse'
 import * as XLSX from 'xlsx'
 
 import type { SelectOption, StudentList } from '@/types'
+import type {ParsedRow} from "../types";
 
 export const getRandomInt = (min: number, max: number) => {
   min = Math.ceil(min)
@@ -57,9 +58,7 @@ export const chunkArray = <T>(arr: T[], size: number) =>
     arr.slice(i * size, i * size + size)
   )
 
-export type ParsedRows = Record<string, unknown>[]
-
-export async function parseBrowserFile(file: File): Promise<ParsedRows> {
+export async function parseBrowserFile(file: File): Promise<ParsedRow> {
   const ext = file.name.toLowerCase().split('.').pop()
 
   if (ext === 'csv') {
@@ -68,7 +67,7 @@ export async function parseBrowserFile(file: File): Promise<ParsedRows> {
         header: true,
         skipEmptyLines: true,
         dynamicTyping: false,
-        complete: (res) => resolve(res.data as ParsedRows),
+        complete: (res) => resolve(res.data as ParsedRow),
         error: reject,
       })
     })
@@ -79,7 +78,7 @@ export async function parseBrowserFile(file: File): Promise<ParsedRows> {
     const wb = XLSX.read(buf, { type: 'array' })
     const firstSheet = wb.SheetNames[0]
     const ws = wb.Sheets[firstSheet]
-    return XLSX.utils.sheet_to_json(ws, { defval: '' }) as ParsedRows
+    return XLSX.utils.sheet_to_json(ws, { defval: '' }) as ParsedRow
   }
 
   throw new Error('Unsupported file type')

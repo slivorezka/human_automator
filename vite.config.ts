@@ -45,19 +45,14 @@ function updateManifest(): Plugin {
         return files.flat()
       }
 
-      let serviceWorkerJsFile = 'service_worker.js'
-      let indexJsFile = 'index.js'
+      let contentJsFile = 'content.js'
       let styleCssFile = 'style.css'
 
       for (const fileName of await walk(outDir)) {
         const baseName = path.basename(fileName)
 
-        if (baseName.startsWith('service_worker-') && baseName.endsWith('.js')) {
-          serviceWorkerJsFile = baseName
-        }
-
-        if (baseName.startsWith('index-') && baseName.endsWith('.js')) {
-          indexJsFile = baseName
+        if (baseName.startsWith('content-') && baseName.endsWith('.js')) {
+          contentJsFile = baseName
         }
 
         if (baseName.startsWith('style-') && baseName.endsWith('.css')) {
@@ -67,23 +62,35 @@ function updateManifest(): Plugin {
 
       const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'))
 
-      if (manifest.background?.service_worker) {
-        manifest.background.service_worker = serviceWorkerJsFile
+      if (Array.isArray(manifest.content_scripts)) {
+        manifest.content_scripts = manifest.content_scripts.map((cs: any) => {
+          if (cs.js && Array.isArray(cs.js)) {
+            cs.js = cs.js.map((f: string) =>
+              /content/i.test(f) ? contentJsFile : f
+            )
+          }
+          if (cs.css && Array.isArray(cs.css)) {
+            cs.css = cs.css.map((f: string) =>
+              /style/i.test(f) ? styleCssFile : f
+            )
+          }
+          return cs
+        })
       }
 
-      const backgroundPath = join(outDir, serviceWorkerJsFile)
+      const contentScriptsPath = join(outDir, contentJsFile)
 
-      if (!existsSync(backgroundPath)) {
+      if (!existsSync(contentScriptsPath)) {
         console.error(
-          `\x1b[31m✗ service_worker.js or service_worker-[hash].js not found at ${manifestPath}\x1b[0m`
+          `\x1b[31m✗ content.js or content-[hash].js not found at ${manifestPath}\x1b[0m`
         )
         return
       }
 
       writeFileSync(
-        backgroundPath,
-        readFileSync(backgroundPath, 'utf-8')
-          .replace(/"index\.js"/g, `"${indexJsFile}"`)
+        contentScriptsPath,
+        readFileSync(contentScriptsPath, 'utf-8')
+          .replace(/"index\.js"/g, `"${contentJsFile}"`)
           .replace(/"style\.css"/g, `"${styleCssFile}"`)
       )
 
@@ -141,8 +148,7 @@ export default defineConfig(() => {
         : undefined,
       rollupOptions: {
         input: {
-          service_worker: resolve(__dirname, 'src/service_worker.ts'),
-          index: resolve(__dirname, 'src/index.tsx'),
+          content: resolve(__dirname, 'src/content.tsx'),
         },
         output: {
           inlineDynamicImports: false,

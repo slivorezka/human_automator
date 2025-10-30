@@ -13,6 +13,8 @@ export function StudentSelectTypeFile({ children }: { children?: ReactNode }) {
       <Card.Body>
         <Form.Label className="fw-bold">Оберіть файл</Form.Label>
         <Form.Control
+          required
+          className="mb-2"
           type="file"
           accept=".csv, .xlsx, .xls"
           onChange={async (e) => {

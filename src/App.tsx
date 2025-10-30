@@ -722,6 +722,9 @@ function App() {
                         <p>
                           Дозволено типи файлів: <span className="fw-bold">.csv, .xlsx, .xls</span>
                         </p>
+                        <p>
+                          Підтримуються файли з ресурсу <a href="https://vseosvita.ua" target="_blank">Всеосвіта</a>, а саме <span className="fw-bold">результати тестування</span>
+                        </p>
                       </StudentSelectTypeFile>
                       <Card className="mt-3">
                         <Card.Body>

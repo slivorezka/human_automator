@@ -17,6 +17,8 @@ export type ToastType =
   | 'studentListSave'
   | 'studentListDelete'
 
+export type ParsedRow = Record<string, unknown>[]
+
 export interface SelectOption {
   value: string
   label: string
