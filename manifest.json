@@ -26,6 +26,6 @@
       "matches": ["*://*.human.ua/*"]
     }
   ],
-  "permissions": ["storage", "scripting", "activeTab", "webNavigation"],
+  "permissions": ["storage"],
   "host_permissions": ["*://*.human.ua/*"]
 }

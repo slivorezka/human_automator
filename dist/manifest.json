@@ -19,7 +19,7 @@
         "*://*.human.ua/*"
       ],
       "js": [
-        "content-CPcaLG5P.js"
+        "content-CH0gEOC2.js"
       ],
       "css": [
         "style-CuCdXjcO.css"
@@ -37,10 +37,7 @@
     }
   ],
   "permissions": [
-    "storage",
-    "scripting",
-    "activeTab",
-    "webNavigation"
+    "storage"
   ],
   "host_permissions": [
     "*://*.human.ua/*"

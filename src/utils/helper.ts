@@ -1,8 +1,7 @@
 import Papa from 'papaparse'
 import * as XLSX from 'xlsx'
 
-import type { SelectOption, StudentList } from '@/types'
-import type {ParsedRow} from "../types";
+import type { SelectOption, StudentList, ParsedRow } from '@/types'
 
 export const getRandomInt = (min: number, max: number) => {
   min = Math.ceil(min)

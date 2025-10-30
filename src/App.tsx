@@ -45,8 +45,7 @@ import {
   taskRating,
   toolPanel,
 } from '@/utils/gradebook'
-import { beep, shuffleArray } from '@/utils/helper'
-import {filterDate} from "./utils/helper";
+import { beep, shuffleArray, filterDate } from '@/utils/helper'
 
 function App() {
   const {
@@ -552,8 +551,7 @@ function App() {
                 </span>
                 {maxPercent < 100 && maxPercent > 0 && (
                   <>
-                    {' '}
-                    із <span className="fw-bold">{maxPercent}%</span>
+                    {' '} із <span className="fw-bold">{maxPercent}%</span>
                   </>
                 )}
               </div>
