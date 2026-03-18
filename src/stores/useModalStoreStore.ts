@@ -8,11 +8,13 @@ const useModalStoreStore = create<{
   showModalStudentListAdd: boolean
   showModalStudentListEdit: boolean
   showModalStudentListDelete: boolean
+  showModalHomeTaskDate: boolean
   setShowModalBasic: (value: boolean) => void
   setShowModalStudentLists: (value: boolean) => void
   setShowModalStudentListAdd: (value: boolean) => void
   setShowModalStudentListEdit: (value: boolean) => void
   setShowModalStudentListDelete: (value: boolean) => void
+  setShowModalHomeTaskDate: (value: boolean) => void
   setModal: (type: ModalType, value: boolean) => void
   reset: () => void
 }>((set, get) => ({
@@ -21,11 +23,13 @@ const useModalStoreStore = create<{
   showModalStudentListAdd: false,
   showModalStudentListEdit: false,
   showModalStudentListDelete: false,
+  showModalHomeTaskDate: false,
   setShowModalBasic: (value) => get().setModal('basic', value),
   setShowModalStudentLists: (value) => get().setModal('studentLists', value),
   setShowModalStudentListAdd: (value) => get().setModal('studentListAdd', value),
   setShowModalStudentListEdit: (value) => get().setModal('studentListEdit', value),
   setShowModalStudentListDelete: (value) => get().setModal('studentListDelete', value),
+  setShowModalHomeTaskDate: (value) => get().setModal('HomeTaskDate', value),
   setModal: (type: ModalType, value: boolean) => {
     set({
       showModalBasic: type === 'basic' && value,
@@ -33,6 +37,7 @@ const useModalStoreStore = create<{
       showModalStudentListAdd: type === 'studentListAdd' && value,
       showModalStudentListEdit: type === 'studentListEdit' && value,
       showModalStudentListDelete: type === 'studentListDelete' && value,
+      showModalHomeTaskDate: type === 'HomeTaskDate' && value,
     })
   },
   reset: () =>
@@ -42,6 +47,7 @@ const useModalStoreStore = create<{
       showModalStudentListAdd: false,
       showModalStudentListEdit: false,
       showModalStudentListDelete: false,
+      showModalHomeTaskDate: false,
     }),
 }))
 

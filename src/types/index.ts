@@ -4,8 +4,15 @@ export type ModalType =
   | 'studentListAdd'
   | 'studentListEdit'
   | 'studentListDelete'
+  | 'HomeTaskDate'
 
-export type Action = false | 'setRating' | 'copyRating' | 'deleteRating' | 'countRating'
+export type Action = false | 'setRating' | 'copyRating' | 'deleteRating' | 'countRating' | 'HomeTaskDate'
+
+export type HomeTaskDateOption =
+  | 'Наступний урок'
+  | 'Через урок'
+  | 'До кінця теми'
+  | 'До кінця семестру'
 
 export type StudentSelectType = 'list' | 'custom' | 'file' | 'all'
 
@@ -16,6 +23,7 @@ export type ToastType =
   | 'studentListAdd'
   | 'studentListSave'
   | 'studentListDelete'
+  | 'HomeTaskDate'
 
 export type ParsedRow = Record<string, unknown>[]
 

@@ -9,6 +9,7 @@ const useActionStore = create<{
   isSetRating: boolean
   isDeleteRating: boolean
   isCountRating: boolean
+  isHomeTaskDate: boolean
   reset: () => void
 }>((set) => ({
   action: false,
@@ -16,6 +17,7 @@ const useActionStore = create<{
   isSetRating: false,
   isDeleteRating: false,
   isCountRating: false,
+  isHomeTaskDate: false,
   setAction: (action) =>
     set({
       action,
@@ -23,6 +25,7 @@ const useActionStore = create<{
       isSetRating: action === 'setRating',
       isDeleteRating: action === 'deleteRating',
       isCountRating: action === 'countRating',
+      isHomeTaskDate: action === 'HomeTaskDate',
     }),
   reset: () =>
     set({
@@ -31,6 +34,7 @@ const useActionStore = create<{
       isSetRating: false,
       isDeleteRating: false,
       isCountRating: false,
+      isHomeTaskDate: false,
     }),
 }))
 

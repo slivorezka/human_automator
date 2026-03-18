@@ -6,6 +6,8 @@ import { RotatingLines } from 'react-loader-spinner'
 
 import Description from '@/components/Description'
 import Header from '@/components/Header'
+import HomeTaskDateSkip from '@/components/HomeTaskDate'
+import HomeTaskDateList from '@/components/HomeTaskDate/HomeTaskDateList.tsx'
 import Message from '@/components/Message'
 import RatingCount from '@/components/RatingCount'
 import StartEndDate from '@/components/StartEndDate'
@@ -25,6 +27,7 @@ import useActionStore from '@/stores/useActionStore'
 import useAppStore from '@/stores/useAppStore'
 import useDateStore from '@/stores/useDateStore'
 import useFormErrorStore from '@/stores/useFormErrorStore'
+import useHomeTaskDateStore from '@/stores/useHomeTaskDateStore.ts'
 import useModalStoreStore from '@/stores/useModalStoreStore'
 import useStudentListsStore from '@/stores/useStudentListsStore'
 import useStudentsStore from '@/stores/useStudentsStore'
@@ -45,7 +48,13 @@ import {
   taskRating,
   toolPanel,
 } from '@/utils/gradebook'
-import { beep, shuffleArray, filterDate } from '@/utils/helper'
+import { beep, filterDate, shuffleArray } from '@/utils/helper'
+import {
+  getLessonHomeTaskExpireDate,
+  getLessonHomeTaskExpireDateDropdown,
+  getLessonHomeTaskLink,
+  getLessonHomeTaskNextLessonLink,
+} from '@/utils/lesson'
 
 function App() {
   const {
@@ -54,6 +63,7 @@ function App() {
     showModalStudentListAdd,
     showModalStudentListEdit,
     showModalStudentListDelete,
+    showModalHomeTaskDate,
     setShowModalBasic,
   } = useModalStoreStore()
 
@@ -81,6 +91,7 @@ function App() {
   const { dates, minDate, maxDate, fileDate, startDate, endDate, setFileDate } = useDateStore()
   const { ratingError, setRatingError, percentError, setPercentError } = useFormErrorStore()
   const { selectedStudents, fileStudents, setSelectedStudents } = useStudentsStore()
+  const { isSkipHomeTaskDate, selectedHomeTaskDate } = useHomeTaskDateStore()
 
   const {
     isStudentSelectTypeAll,
@@ -93,7 +104,7 @@ function App() {
 
   const { toast, setToast } = useToastStore()
 
-  const { action, setAction, isSetRating, isCopyRating, isDeleteRating, isCountRating } =
+  const { action, setAction, isSetRating, isCopyRating, isDeleteRating, isCountRating, isHomeTaskDate } =
     useActionStore()
   const { processItem } = useProcessing()
 
@@ -125,6 +136,54 @@ function App() {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+
+    if (isHomeTaskDate) {
+      setSubmitting(true)
+      setProcessing(true)
+      setCurrentPercent(0)
+      setMaxPercent(100)
+
+      let percent = 0
+
+      let LessonHomeTaskLink = getLessonHomeTaskLink()
+
+      while (LessonHomeTaskLink !== null && useAppStore.getState().isProcessing) {
+        LessonHomeTaskLink?.click()
+
+        await new Promise((resolve) => setTimeout(resolve, 2000))
+
+        const lessonHomeTaskExpireDate = getLessonHomeTaskExpireDate()
+
+        if (
+          !isSkipHomeTaskDate ||
+          lessonHomeTaskExpireDate?.textContent?.trim() === 'Здача: Не обрана'
+        ) {
+          if (selectedHomeTaskDate !== null) {
+            lessonHomeTaskExpireDate?.click()
+
+            await new Promise((resolve) => setTimeout(resolve, 1000))
+
+            getLessonHomeTaskExpireDateDropdown(selectedHomeTaskDate)?.click()
+          } else {
+            throw new Error('Home task expire date are not defined')
+          }
+
+          await new Promise((resolve) => setTimeout(resolve, 1000))
+        }
+
+        getLessonHomeTaskNextLessonLink()?.click()
+
+        await new Promise((resolve) => setTimeout(resolve, 2000))
+
+        LessonHomeTaskLink = getLessonHomeTaskLink()
+
+        setCurrentPercent(percent++)
+      }
+
+      handleStop('HomeTaskDate')
+
+      return
+    }
 
     if (isCountRating) {
       setCountRating(true)
@@ -522,11 +581,17 @@ function App() {
           Список учнів успішно видалено!
         </Message>
       )}
+      {toast === 'HomeTaskDate' && (
+        <Message type="success" onClose={() => setToast(false)}>
+          Дату здачі завдання успішно виставлено!
+        </Message>
+      )}
 
       {showModalStudentListAdd && <StudentListAdd />}
       {showModalStudentListEdit && <StudentListEdit />}
       {showModalStudentListDelete && <StudentListDelete />}
       {showModalStudentLists && <StudentLists />}
+      {showModalHomeTaskDate && <HomeTaskDateSkip />}
 
       {isProcessing ? (
         <Modal show={showModalBasic} onHide={handleClose} centered animation>
@@ -554,7 +619,8 @@ function App() {
                 </span>
                 {maxPercent < 100 && maxPercent > 0 && (
                   <>
-                    {' '} із <span className="fw-bold">{maxPercent}%</span>
+                    {' '}
+                    із <span className="fw-bold">{maxPercent}%</span>
                   </>
                 )}
               </div>
@@ -607,6 +673,15 @@ function App() {
                       e.target.checked ? setAction('countRating') : setAction(false)
                     }
                     checked={isCountRating}
+                    disabled={isSubmitting}
+                  />
+                  <Form.Check
+                    type="switch"
+                    label="Виставити дату здачі завдання"
+                    onChange={(e) =>
+                      e.target.checked ? setAction('HomeTaskDate') : setAction(false)
+                    }
+                    checked={isHomeTaskDate}
                     disabled={isSubmitting}
                   />
                 </Card.Body>
@@ -721,7 +796,11 @@ function App() {
                           Дозволено типи файлів: <span className="fw-bold">.csv, .xlsx, .xls</span>
                         </p>
                         <p>
-                          Підтримуються файли з ресурсу <a href="https://vseosvita.ua" target="_blank">Всеосвіта</a>, а саме <span className="fw-bold">результати тестування</span>
+                          Підтримуються файли з ресурсу{' '}
+                          <a href="https://vseosvita.ua" target="_blank">
+                            Всеосвіта
+                          </a>
+                          , а саме <span className="fw-bold">результати тестування</span>
                         </p>
                       </StudentSelectTypeFile>
                       <Card className="mt-3">
@@ -970,6 +1049,7 @@ function App() {
                   </Card>
                 </>
               )}
+
               {isCountRating && (
                 <>
                   <Description>
@@ -1004,6 +1084,23 @@ function App() {
                   </Card>
                 </>
               )}
+
+              {isHomeTaskDate && (
+                <>
+                  <Description>
+                    <p>
+                      <b>Дата здачі завдання</b> — Дозволяє виставити однакову дату здачі для всіх
+                      створених завдань.
+                    </p>
+                  </Description>
+                  <Card className="mt-3">
+                    <Card.Body>
+                      <HomeTaskDateList />
+                      <HomeTaskDateSkip />
+                    </Card.Body>
+                  </Card>
+                </>
+              )}
             </Modal.Body>
             <Modal.Footer className="justify-content-between">
               <Button variant="danger" onClick={handleClose}>
@@ -1012,7 +1109,10 @@ function App() {
               </Button>
               <Button
                 disabled={
-                  !action || isSubmitting || (isStudentSelectTypeList && studentLists.length === 0)
+                  !action ||
+                  isSubmitting ||
+                  (isStudentSelectTypeList && studentLists.length === 0) ||
+                  (isHomeTaskDate && selectedHomeTaskDate?.length === 0)
                 }
                 variant="primary"
                 type="submit"
